@@ -3,6 +3,7 @@
 # 📦 Order Management System
 
 ### Clean Architecture | CQRS | Design Patterns
+![img.png](img.png)
 
 This project is a Spring Boot application designed with a strict separation of concerns to ensure maintainability and scalability.
 
