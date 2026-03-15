@@ -1,9 +1,11 @@
 
----
+
+
 
 # 📦 Order Management System: Seller Dashboard
 
 ![img_2.png](img_2.png)
+
 
 ### **The Enterprise Standard for Clean Code**
 
@@ -11,14 +13,20 @@ This isn't just a simple CRUD app. This project is a high-performance **Seller D
 
 ---
 
+---
+
 ## 📑 Quick Navigation
 
-* [🚀 Features & Intent](https://www.google.com/search?q=%23-introduction)
-* [🧠 The Domain Heart](https://www.google.com/search?q=%23-domain-layer-aggregates--value-objects)
-* [🔄 The Three-Model Flow](https://www.google.com/search?q=%23-the-three-model-enterprise-flow)
-* [⚡ CQRS Implementation](https://www.google.com/search?q=%23-implementation-of-cqrs)
-* [🏗️ Design Patterns](https://www.google.com/search?q=%23-strategic-design-patterns)
-* [🛠️ Getting Started](https://www.google.com/search?q=%23-how-to-run)
+* [🚀 Introduction](https://www.google.com/search?q=%231-introduction-)
+* [🧠 Domain Layer (The Heart)](https://www.google.com/search?q=%232-domain-layer-aggregates--value-objects-)
+* [⚙️ Application Layer (The Orchestrator)](https://www.google.com/search?q=%233-application-layer-the-orchestrator-%EF%B8%8F)
+* [🔌 Infrastructure Layer (The Tools)](https://www.google.com/search?q=%234-infrastructure-layer-the-tools-)
+* [🎨 Presentation Layer (The UI)](https://www.google.com/search?q=%235-presentation-layer-the-ui-)
+* [🔄 The Three-Model Flow](https://www.google.com/search?q=%236-the-three-model-enterprise-flow-)
+* [⚡ CQRS Implementation](https://www.google.com/search?q=%237-implementation-of-cqrs-)
+* [🛠️ Getting Started](https://www.google.com/search?q=%238-how-to-run-%EF%B8%8F)
+
+---
 
 ---
 
@@ -31,9 +39,9 @@ In a real enterprise environment, the "How" (Business Rules) should never be tan
 
 ---
 
-## 2. Domain Layer: Aggregates & Value Objects 🧠
+## 🧠 2. Domain Layer: Aggregates & Value Objects 
 
-We use **Domain-Driven Design (DDD)** to ensure your data is always consistent and valid.
+We use **Domain-Driven Design (DDD)** basic concepts to ensure the data  always tobo consistent and valid.
 
 * **Order (Aggregate Root) 👑:** The entry point for all order logic. It guards the lifecycle of an order (e.g., ensuring an order can't be "Delivered" before it's "Paid").
 * **OrderItem (Value Object) 📦:** Immutable units representing the products. They don't have their own ID; they exist only as part of the Order.
@@ -41,7 +49,40 @@ We use **Domain-Driven Design (DDD)** to ensure your data is always consistent a
 
 ---
 
-## 3. The Three-Model Enterprise Flow 🔄
+---
+
+## ⚙️ 3. Application Layer: The Orchestrator 
+
+This layer contains the **Use Cases** of the system. It doesn't contain business rules (those are in the Domain), but it knows *how* to coordinate the work.
+
+* **Command Handlers (Write Path):** These handlers (like `PlaceOrderHandler` or `UpdateStatusHandler`) receive a request, load the **Aggregate** from the database, tell the Aggregate to perform a business action, and then save the result.
+* **Query Handlers (Read Path):** These focus on speed. They bypass complex business logic to fetch **DTOs** directly for the UI.
+* **The "Glue":** This layer defines the interfaces (like `OrderRepository`) that the Infrastructure layer must implement, keeping the system flexible.
+
+---
+
+
+## 🔌 4. Infrastructure Layer: The Tools
+
+This is where the "heavy lifting" happens. This layer contains everything that talks to external systems.
+
+* **Persistence:** Contains the `OrderRepositoryImpl` and `OrderEntity`. It handles the raw SQL/JPA logic to save your data to **MySQL**.
+* **Configuration:** Sets up the Spring Boot beans and security settings.
+* **Independence:** Because of the **Dependency Inversion Principle**, you could swap this entire layer for a MongoDB implementation without touching your Domain logic.
+
+---
+
+## 🎨 5. Presentation Layer: The UI
+
+The outermost shell that interacts directly with the user.
+
+* **Web Controllers:** Handle the incoming HTTP requests and map them to Application commands.
+* **Thymeleaf Templates:** Renders the **Seller Dashboard**.
+* **The Buffer:** This layer strictly uses **OrderResponse DTOs**. It never sees the `OrderEntity`, which prevents the "switched columns" bug we fixed!
+
+---
+
+## 🔄 6. The Three-Model Enterprise Flow 
 
 To prevent "leaky abstractions," we maintain three distinct versions of our data. This ensures the UI never dictates how the database is structured.
 
@@ -52,7 +93,7 @@ To prevent "leaky abstractions," we maintain three distinct versions of our data
 ---
 ![img_3.png](img_3.png)
 
-## 4. Implementation of CQRS ⚡
+## ⚡ 7. Implementation of CQRS 
 
 We separate **Writes** from **Reads** to maximize efficiency.
 
@@ -64,7 +105,7 @@ We separate **Writes** from **Reads** to maximize efficiency.
 
 ---
 
-## 5. Strategic Design Patterns 🏗️
+### 🏗️ Strategic Design Patterns 
 
 * **Use Case Pattern:** Every action (like `UpdateStatusHandler`) is a standalone unit. This makes testing incredibly easy.
 * **Repository Pattern:** A "gatekeeper" that hides the complexity of MySQL from the rest of the app.
@@ -72,7 +113,7 @@ We separate **Writes** from **Reads** to maximize efficiency.
 
 ---
 
-## 6. How to Run 🛠️
+## 8. How to Run 🛠️
 
 ### **1. Prepare the Database**
 
