@@ -17,15 +17,14 @@ This isn't just a simple CRUD app. This project is a high-performance **Seller D
 
 ## 📑 Quick Navigation
 
-* [🚀 Introduction](https://www.google.com/search?q=%231-introduction-)
-* [🧠 Domain Layer (The Heart)](https://www.google.com/search?q=%232-domain-layer-aggregates--value-objects-)
-* [⚙️ Application Layer (The Orchestrator)](https://www.google.com/search?q=%233-application-layer-the-orchestrator-%EF%B8%8F)
-* [🔌 Infrastructure Layer (The Tools)](https://www.google.com/search?q=%234-infrastructure-layer-the-tools-)
-* [🎨 Presentation Layer (The UI)](https://www.google.com/search?q=%235-presentation-layer-the-ui-)
-* [🔄 The Three-Model Flow](https://www.google.com/search?q=%236-the-three-model-enterprise-flow-)
-* [⚡ CQRS Implementation](https://www.google.com/search?q=%237-implementation-of-cqrs-)
-* [🛠️ Getting Started](https://www.google.com/search?q=%238-how-to-run-%EF%B8%8F)
-
+* [🚀 Introduction](#1-introduction-)
+* [🧠 Domain Layer (The Heart)](#2-domain-layer-aggregates--value-objects-)
+* [⚙️ Application Layer (The Orchestrator)](#3-application-layer-the-orchestrator-️)
+* [🔌 Infrastructure Layer (The Tools)](#4-infrastructure-layer-the-tools-)
+* [🎨 Presentation Layer (The UI)](#5-presentation-layer-the-ui-)
+* [🔄 The Three-Model Flow](#6-the-three-model-enterprise-flow-)
+* [⚡ CQRS Implementation](#7-implementation-of-cqrs-)
+* [🛠️ Getting Started](#8-how-to-run-️)
 ---
 
 ---
