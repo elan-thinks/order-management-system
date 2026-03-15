@@ -1,51 +1,62 @@
 package com.example.ordermanagement.presentation.controller;
 
-import com.example.ordermanagement.application.command.PlaceOrderCommand;
-import com.example.ordermanagement.application.command.PlaceOrderHandler;
+import com.example.ordermanagement.application.command.*;
 import com.example.ordermanagement.application.query.OrderQueryHandler;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/web") // This prefixes everything below with /web
-public class OrderViewController {
-    private final OrderQueryHandler queryHandler;
-    private final PlaceOrderHandler commandHandler;
+import java.util.List;
 
-    public OrderViewController(OrderQueryHandler q, PlaceOrderHandler c) {
+@Controller
+@RequestMapping("/") // Root access to match your HTML
+public class OrderViewController {
+
+    private final OrderQueryHandler queryHandler;
+    private final PlaceOrderHandler placeHandler;
+    private final DeleteOrderHandler deleteHandler;
+    private final UpdateStatusHandler updateHandler;
+
+    public OrderViewController(OrderQueryHandler q, PlaceOrderHandler p,
+                               DeleteOrderHandler d, UpdateStatusHandler u) {
         this.queryHandler = q;
-        this.commandHandler = c;
+        this.placeHandler = p;
+        this.deleteHandler = d;
+        this.updateHandler = u;
     }
 
-    // URL: localhost:8080/web/dashboard
-    @GetMapping("/dashboard")
-    public String showDashboard(Model model) {
+    // Displays the Dashboard
+    @GetMapping("/")
+    public String index(Model model) {
         model.addAttribute("orders", queryHandler.handleAll());
-
-        // Fallback: If getStats() is null, provide an empty map so Thymeleaf doesn't crash
-        Object stats = queryHandler.getStats();
-        if (stats == null) {
-            model.addAttribute("stats", java.util.Map.of("totalOrders", 0, "totalRevenue", 0.0));
-        } else {
-            model.addAttribute("stats", stats);
-        }
-
+        model.addAttribute("stats", queryHandler.getStats());
         return "index";
     }
 
-    // URL: localhost:8080/web/orders
+    // Handles "Quick Add Order" Form
     @PostMapping("/orders")
     public String addOrder(@RequestParam String product,
                            @RequestParam int quantity,
                            @RequestParam double price) {
+        placeHandler.handle(new PlaceOrderCommand(
+                List.of(new PlaceOrderCommand.ItemData(product, quantity, price))
+        ));
+        return "redirect:/";
+    }
 
-        // TRAP: Look at your IntelliJ console after you click "Add Order"
-        System.out.println("--- FORM SUBMITTED ---");
-        System.out.println("Product: " + product);
-        System.out.println("Qty: " + quantity);
+    // Handles the "Done" button (Updates status to Delivered)
+    @PostMapping("/orders/{id}/done")
+    public String markAsDone(@PathVariable String id) {
+        updateHandler.handle(new UpdateStatusCommand(id, "Delivered"));
+        return "redirect:/";
+    }
 
-        commandHandler.handle(new PlaceOrderCommand(product, quantity, price));
-        return "redirect:/web/dashboard";
+    // Handles the JavaScript "Delete" call
+    @DeleteMapping("/orders/{id}")
+    @ResponseBody
+    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
+        deleteHandler.handle(new DeleteOrderCommand(id));
+        return ResponseEntity.ok().build();
     }
 }

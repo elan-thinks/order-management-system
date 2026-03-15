@@ -1,62 +1,69 @@
 package com.example.ordermanagement.infrastructure.persistence;
 
 import com.example.ordermanagement.domain.model.Order;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "orders")
 public class OrderEntity {
+
     @Id
+//    @Id
+    @Column(name = "id")
     private String id;
-    private String product;
-    private int quantity;
-    private double price;
-    private String status;
-    private String payment;
+
+    @Column(name = "order_date") // Matches UI column 1
     private LocalDate orderDate;
 
-    // This is the missing method causing your error!
+    @Column(name = "payment")    // Matches UI column 7
+    private String payment;
+
+    @Column(name = "status")     // Matches UI column 8
+    private String status;
+//    private String id;
+//    private String status;
+//    private String payment;
+//    private LocalDate orderDate;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_id")
+    private List<OrderItemEntity> items;
+
+    public OrderEntity() {}
+
     public static OrderEntity fromDomain(Order order) {
         OrderEntity entity = new OrderEntity();
+
         entity.id = order.getId();
-        entity.product = order.getProduct();
-        entity.quantity = order.getQuantity();
-        entity.price = order.getPrice();
         entity.status = order.getStatus();
         entity.payment = order.getPayment();
         entity.orderDate = order.getDate();
+        entity.items = order.getItems().stream()
+                .map(OrderItemEntity::fromDomain)
+                .collect(Collectors.toList());
         return entity;
     }
 
-    // You also need this to convert database results back to the Domain
     public Order toDomain() {
-        return new Order(
-                this.id,
-                this.product,
-                this.quantity,
-                this.price,
-                this.status,
-                this.payment,
-                this.orderDate
-        );
+        Order order = new Order(id, status, payment, orderDate);
+        if (items != null) {
+            items.forEach(item -> order.addItem(item.toDomain()));
+        }
+        return order;
     }
 
-    // Standard Getters and Setters (Required for JPA)
+    // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public String getProduct() { return product; }
-    public void setProduct(String product) { this.product = product; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getPayment() { return payment; }
     public void setPayment(String payment) { this.payment = payment; }
     public LocalDate getOrderDate() { return orderDate; }
     public void setOrderDate(LocalDate orderDate) { this.orderDate = orderDate; }
+    public List<OrderItemEntity> getItems() { return items; }
+    public void setItems(List<OrderItemEntity> items) { this.items = items; }
 }

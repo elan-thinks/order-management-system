@@ -1,12 +1,16 @@
 package com.example.ordermanagement.application.command;
 
-import com.example.ordermanagement.domain.repository.OrderRepository;
 import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.value.OrderItem;
+import com.example.ordermanagement.domain.value.Money;
+import com.example.ordermanagement.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Handler
 @Service
 public class UpdateQuantityHandler {
+
     private final OrderRepository repository;
 
     public UpdateQuantityHandler(OrderRepository repository) {
@@ -15,21 +19,22 @@ public class UpdateQuantityHandler {
 
     @Transactional
     public void handle(UpdateQuantityCommand command) {
-        // Use String ID to find the order
+
         Order order = repository.findById(command.orderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // Create the updated domain object with all 7 fields
-        Order updatedOrder = new Order(
-                order.getId(),
-                order.getProduct(),
-                command.newQuantity(), // The change
-                order.getPrice(),
-                order.getStatus(),
-                order.getPayment(),
-                order.getDate()
-        );
+        boolean updated = false;
+        for (OrderItem item : order.getItems()) {
+            if (item.getProduct().equals(command.productName())) {
+                order.getItems().remove(item);
+                order.addItem(new OrderItem(item.getProduct(), command.newQuantity(), new Money(item.getPrice())));
+                updated = true;
+                break;
+            }
+        }
 
-        repository.save(updatedOrder);
+        if (!updated) throw new RuntimeException("Product not found in order");
+
+        repository.save(order);
     }
 }

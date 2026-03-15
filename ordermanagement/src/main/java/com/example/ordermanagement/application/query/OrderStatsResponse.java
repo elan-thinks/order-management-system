@@ -2,6 +2,7 @@ package com.example.ordermanagement.application.query;
 
 public record OrderStatsResponse(
         long totalOrders,
-        double totalRevenue,
-        int totalItemsSold
+        double revenue,
+        long pendingOrders,
+        int totalItems
 ) {}

@@ -3,16 +3,21 @@ package com.example.ordermanagement.application.query;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
-@Data
-@AllArgsConstructor // <-- This is what creates the 7-argument constructor
-@NoArgsConstructor  // <-- This creates the 0-argument constructor
+@Data // This automatically creates all Getters, Setters, toString, and equals/hashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderResponse {
-    private String orderId;
+    private String orderId;     // Changed from 'id' to 'orderId' to match your history
     private String productName;
-    private int qty;
     private double unitPrice;
-    private double total;
+    private int qty;
     private String payment;
     private String orderStatus;
+    private double totalPrice;
+    private LocalDate orderDate;
+
+
+
 }

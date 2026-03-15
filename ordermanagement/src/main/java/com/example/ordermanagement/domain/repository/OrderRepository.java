@@ -8,9 +8,6 @@ public interface OrderRepository {
     void save(Order order);
     List<Order> findAll();
     long count();
-    // Ensure this uses String, not UUID!
     Optional<Order> findById(String id);
     void deleteById(String id);
-    // domain/repository/OrderRepository.java
-    List<Order> findByProductNameContaining(String term);
 }

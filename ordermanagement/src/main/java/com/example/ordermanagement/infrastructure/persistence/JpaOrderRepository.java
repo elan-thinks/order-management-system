@@ -2,61 +2,44 @@ package com.example.ordermanagement.infrastructure.persistence;
 
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.OrderRepository;
-import org.springframework.stereotype.Repository;
-import java.util.stream.Collectors;
-
-
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
-@Repository
+@Component
 public class JpaOrderRepository implements OrderRepository {
 
-    private final SpringDataOrderRepository jpaRepository;
+    private final SpringDataOrderRepository springRepo;
 
-    public JpaOrderRepository(SpringDataOrderRepository jpaRepository) {
-        this.jpaRepository = jpaRepository;
+    public JpaOrderRepository(SpringDataOrderRepository springRepo) {
+        this.springRepo = springRepo;
     }
 
-    @Override
-    public long count() {
-        // This calls the built-in count() method in Spring Data JPA
-        return jpaRepository.count();
-    }
     @Override
     public void save(Order order) {
-        // Map Domain model to JPA Entity before saving
-        OrderEntity entity = OrderEntity.fromDomain(order);
-        this.jpaRepository.save(entity);
+        springRepo.save(OrderEntity.fromDomain(order));
     }
 
     @Override
     public List<Order> findAll() {
-        return jpaRepository.findAll().stream()
-                .map(OrderEntity::toDomain) // Map back to Domain for the app
+        return springRepo.findAll().stream()
+                .map(OrderEntity::toDomain)
                 .collect(Collectors.toList());
+    }
 
+    @Override
+    public long count() {
+        return springRepo.count();
     }
 
     @Override
     public Optional<Order> findById(String id) {
-        return jpaRepository.findById(id)
-                .map(OrderEntity::toDomain);
+        return springRepo.findById(id).map(OrderEntity::toDomain);
     }
 
     @Override
     public void deleteById(String id) {
-        jpaRepository.deleteById(id);
+        springRepo.deleteById(id);
     }
-
-    // infrastructure/persistence/JpaOrderRepository.java
-    @Override
-    public List<Order> findByProductNameContaining(String term) {
-        return jpaRepository.findByProductContainingIgnoreCase(term)
-                .stream()
-                .map(OrderEntity::toDomain)
-                .toList();
-    }
-    // Implement findById similarly...
 }

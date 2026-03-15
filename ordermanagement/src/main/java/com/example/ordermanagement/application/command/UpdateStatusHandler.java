@@ -1,25 +1,29 @@
 package com.example.ordermanagement.application.command;
 
-import com.example.ordermanagement.infrastructure.persistence.OrderEntity;
-import com.example.ordermanagement.infrastructure.persistence.SpringDataOrderRepository;
-import org.springframework.transaction.annotation.Transactional; // Add this import
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UpdateStatusHandler {
+    private final OrderRepository repository;
 
-    @Autowired
-    private SpringDataOrderRepository repository;
-
-    @Transactional
-    public void handle(String orderId, String newStatus) {
-        repository.findById(orderId).ifPresent(order -> {
-            // Using setStatus because that is the name in your OrderEntity
-            order.setStatus(newStatus);
-            order.setPayment("Paid");   // Automatically mark as Paid
-            repository.save(order);
-        });
+    public UpdateStatusHandler(OrderRepository repository) {
+        this.repository = repository;
     }
 
+    @Transactional
+    public void handle(UpdateStatusCommand command) {
+        // 1. Get the Optional from the repository
+        Optional<Order> orderOptional = repository.findById(command.orderId());
+
+        // 2. Open the "box" and perform actions if the order exists
+        orderOptional.ifPresent(order -> {
+            order.deliver(); // Now calling deliver() on the actual Order object
+            repository.save(order); // Saving the actual Order object
+        });
+    }
 }

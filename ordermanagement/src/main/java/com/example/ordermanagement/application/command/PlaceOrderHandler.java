@@ -2,37 +2,35 @@ package com.example.ordermanagement.application.command;
 
 import com.example.ordermanagement.domain.factory.OrderFactory;
 import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.value.Money;
+import com.example.ordermanagement.domain.value.OrderItem;
 import com.example.ordermanagement.domain.repository.OrderRepository;
-import org.springframework.transaction.annotation.Transactional;
-//import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 public class PlaceOrderHandler {
+    private final OrderFactory factory;
     private final OrderRepository repository;
-    private final OrderFactory orderFactory; // Ensure the factory is injected
 
-    public PlaceOrderHandler(OrderRepository repository, OrderFactory orderFactory) {
+    public PlaceOrderHandler(OrderFactory factory, OrderRepository repository) {
+        this.factory = factory;
         this.repository = repository;
-        this.orderFactory = orderFactory;
     }
 
-    @Transactional // <--- ADD THIS LINE HERE
+    @Transactional
     public void handle(PlaceOrderCommand command) {
-        Order order = orderFactory.createOrder(
-                command.product(),
-                command.quantity(),
-                command.price()
-        );
-        repository.save(order);
-        System.out.println("DEBUG: Order saved to database: " + order.getId());
-    }
-    @Service
-    public class UpdateQuantityHandler {
-        private final OrderRepository repository;
+        List<OrderItem> orderItems = command.items().stream()
+                .map(i -> new OrderItem(i.product(), i.quantity(), new Money(i.price())))
+                .toList();
 
-        public UpdateQuantityHandler(OrderRepository repository) {
-            this.repository = repository;
-        }
+        Order order = factory.createOrder(orderItems);
+
+        // Calculate total quantity from items and set it on the parent Order
+        int totalQty = command.items().stream().mapToInt(i -> i.quantity()).sum();
+        order.setQuantity(totalQty); // This satisfies the DB constraint!
+
+        repository.save(order);
     }
 }

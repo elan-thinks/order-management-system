@@ -2,39 +2,34 @@ package com.example.ordermanagement.domain.factory;
 
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.value.OrderItem;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class OrderFactory {
-
     private final OrderRepository repository;
 
     public OrderFactory(OrderRepository repository) {
         this.repository = repository;
     }
 
-    /**
-     * Creates a professional Order with ORDXXXX formatting.
-     */
-    public Order createOrder(String product, int quantity, double price) {
-        String uniqueId = "ORD-" + System.currentTimeMillis();
-        // 1. Business Rule: Validation
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero");
+    public Order createOrder(List<OrderItem> items) {
+        String formattedId = String.format("ORD-%d", System.currentTimeMillis() % 100000);
 
-        // 2. ID Generation: Get current count from DB to create sequential ID
-        long nextId = repository.count() + 1;
-        String formattedId = String.format("ORD%04d", nextId);
+        // Initializing with "Unpaid" so it only becomes "Paid" when "Done" is clicked
+        Order order = new Order(formattedId, "Pending", "Unpaid", LocalDate.now());
 
-        // 3. Defaults: New orders start as 'Pending' and 'Unpaid'
-        return new Order(
-                uniqueId,
-                product,
-                quantity,
-                price,
-                "Pending", // Default status for UI
-                "Unpaid",  // Default payment for UI
-                LocalDate.now()
-        );
+        // Use a standard lambda instead of a method reference
+        for (OrderItem item : items) {
+            order.addItem(item);
+        }
+
+        // Calculate total quantity and set it
+        int totalQty = items.stream().mapToInt(OrderItem::getQuantity).sum();
+        order.setQuantity(totalQty);
+
+        return order;
     }
 }

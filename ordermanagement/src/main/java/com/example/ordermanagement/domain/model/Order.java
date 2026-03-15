@@ -1,37 +1,52 @@
 package com.example.ordermanagement.domain.model;
 
+import com.example.ordermanagement.domain.value.OrderItem;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Updated Domain Model to match the Prodlytics UI requirements.
- * It now includes status and payment tracking.
- */
 public class Order {
-    private final String id;         // Changed from UUID to String for "ORD0001" format
-    private final String product;
-    private final int quantity;
-    private final double price;
-    private final String status;      // For: Delivered, Pending, Shipped
-    private final String payment;     // For: Paid, Unpaid
-    private final LocalDate date;     // For the "Date" column in your UI
+    private final String id;
+    private final LocalDate date;
+    private String status;
+    private String payment;
+    private int quantity;
+    private final List<OrderItem> items = new ArrayList<>();
 
-    // Constructor updated with the new fields
-    public Order(String id, String product, int quantity, double price, String status, String payment, LocalDate date) {
+    public Order(String id, String status, String payment, LocalDate date) {
         this.id = id;
-        this.product = product;
-        this.quantity = quantity;
-        this.price = price;
         this.status = status;
         this.payment = payment;
         this.date = date;
     }
 
-    // Getters for all fields
+    // THIS WAS MISSING - Add it back!
+    public void addItem(OrderItem item) {
+        this.items.add(item);
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setPayment(String payment) {
+        this.payment = payment;
+    }
+
+    public void deliver() {
+        this.status = "Delivered";
+        this.payment = "Paid";
+    }
+
+    public double getTotalPrice() {
+        return items.stream().mapToDouble(OrderItem::getTotal).sum();
+    }
+
+    // Getters
     public String getId() { return id; }
-    public String getProduct() { return product; }
-    public int getQuantity() { return quantity; }
-    public double getPrice() { return price; }
     public String getStatus() { return status; }
     public String getPayment() { return payment; }
+    public int getQuantity() { return quantity; }
     public LocalDate getDate() { return date; }
+    public List<OrderItem> getItems() { return items; }
 }

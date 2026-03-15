@@ -1,17 +1,27 @@
+//package com.example.ordermanagement.infrastructure.persistence;
+//
+//import org.springframework.data.jpa.repository.JpaRepository;
+//import org.springframework.data.jpa.repository.Query;
+//
+//import java.util.List;
+//
+//public interface SpringDataOrderRepository
+//        extends JpaRepository<OrderEntity, String> {
+//
+//    @Query("""
+//        SELECT DISTINCT o
+//        FROM OrderEntity o
+//        JOIN o.items i
+//        WHERE LOWER(i.product) LIKE LOWER(CONCAT('%', :product, '%'))
+//    """)
+//    List<OrderEntity> searchByProduct(String product);
+//}
+
 package com.example.ordermanagement.infrastructure.persistence;
 
-import com.example.ordermanagement.infrastructure.persistence.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.UUID;
-
-/**
- * This interface handles the actual communication with MySQL.
- * UUID is the type of our ID, and OrderEntity is the table mapping.
- */
-// The 'String' here must match the @Id type in OrderEntity
+@Repository
 public interface SpringDataOrderRepository extends JpaRepository<OrderEntity, String> {
-    List<OrderEntity> findByProductContainingIgnoreCase(String product);
-
 }

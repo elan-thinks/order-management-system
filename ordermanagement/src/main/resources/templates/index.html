@@ -36,9 +36,10 @@
             font-weight: 700;
             text-transform: uppercase;
         }
+        /* Ensure these match the lowercase version of your statuses */
         .bg-delivered { background: #dcfce7; color: #166534; }
         .bg-pending { background: #fef9c3; color: #854d0e; }
-        .bg-shipped { background: #e0f2fe; color: #0369a1; }
+        .bg-unpaid { background: #fee2e2; color: #991b1b; } /* Added for 'Unpaid' orders */
 
         /* Table Styling */
         .table-card { border-radius: 16px; border: none; background: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
@@ -65,36 +66,33 @@
         <div class="col-md-3">
             <div class="card kpi-card p-4 border-start border-primary border-4">
                 <small class="text-uppercase fw-bold text-muted">Total Revenue</small>
-                <h2 class="fw-bold text-primary mb-0" th:text="'$' + ${stats.totalRevenue}">$0</h2>
+                <h2 class="fw-bold text-primary mb-0" th:text="'$' + ${#numbers.formatDecimal(stats.revenue, 1, 2)}">$0</h2>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card kpi-card p-4">
                 <small class="text-uppercase fw-bold text-muted">Items Sold</small>
-                <h2 class="fw-bold mb-0" th:text="${stats.totalItemsSold}">0</h2>
+                <h2 class="fw-bold mb-0" th:text="${stats.totalItems}">0</h2>
             </div>
         </div>
-<!--        <div class="col-md-3 align-self-center text-end">-->
-<!--            <a href="/api/reports/download" class="btn btn-dark rounded-pill px-4 shadow-sm">-->
-<!--                📥 Download Report-->
-<!--            </a>-->
-<!--        </div>-->
     </div>
 
     <div class="card p-4 mb-4 border-0 shadow-sm" style="border-radius: 16px;">
         <h6 class="fw-bold mb-3 text-muted text-uppercase">Quick Add Order</h6>
-        <form th:action="@{/web/orders}" method="post" class="row g-3">
-            <div class="col-md-4">
-                <input type="text" name="product" class="form-control" placeholder="Product Name" required>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="quantity" class="form-control" placeholder="Qty" required>
-            </div>
-            <div class="col-md-3">
-                <input type="number" step="0.01" name="price" class="form-control" placeholder="Unit Price" required>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">Add Order</button>
+        <form action="/orders" method="POST">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="product" class="form-control" placeholder="Product Name" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="quantity" class="form-control" placeholder="Qty" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" step="0.01" name="price" class="form-control" placeholder="Price" required>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Add Order</button>
+                </div>
             </div>
         </form>
     </div>
@@ -103,8 +101,8 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
                 <button class="btn btn-white border filter-btn active" data-status="all">All Orders</button>
-                <button class="btn btn-white border filter-btn" data-status="Pending">Pending</button>
-                <button class="btn btn-white border filter-btn" data-status="Delivered">Completed</button>
+                <button class="btn btn-white border filter-btn" data-status="PENDING">Pending</button>
+                <button class="btn btn-white border filter-btn" data-status="DELIVERED">Completed</button>
             </div>
             <span class="text-muted small" th:text="${orders.size() + ' orders found'}"></span>
         </div>
@@ -112,50 +110,62 @@
         <table class="table align-middle" id="orderTable">
             <thead>
             <tr>
-                <th class="ps-3">Order ID</th>
+                <th class="ps-3">Date</th>
+                <th>Order ID</th>
                 <th>Product</th>
-                <th>Price</th>
-                <th>Amount</th>
+                <th>Unit Price</th>
+                <th>Qty</th>
+                <th>Total</th>
                 <th>Payment</th>
                 <th>Status</th>
+
                 <th class="text-end">Actions</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="order : ${orders}">
-                <td class="ps-3 fw-bold" th:text="${order.orderId}"></td>
-                <td th:text="${order.productName}"></td>
-                <td th:text="'$' + ${#numbers.formatDecimal(order.unitPrice, 1, 2)}"></td>
-                <td th:text="${order.qty}"></td>
-                <td th:text="${order.payment}"
-                    th:classappend="${order.payment == 'Paid' ? 'text-success fw-bold' : 'text-danger'}">
-                </td>
-                <td>
-                    <span th:class="'status-pill bg-' + ${#strings.toLowerCase(order.orderStatus)}" th:text="${order.orderStatus}"></span>
-                </td>
-                <td class="text-end">
-                    <div class="btn-group">
-                        <form th:action="@{/api/orders/update-status}" method="post" style="display:inline;">
-                            <input type="hidden" name="orderId" th:value="${order.orderId}">
-                            <input type="hidden" name="newStatus" value="Delivered">
-                            <button type="submit" class="btn btn-sm btn-outline-success me-2 rounded-pill">Done</button>
-                        </form>
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger rounded-pill"
-                                th:data-id="${order.orderId}"
-                                onclick="deleteOrder(this.getAttribute('data-id'))">
-                            Delete
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
+        <tr th:each="order : ${orders}">
+            <td class="ps-3 text-muted small" th:text="${order.orderDate}"></td>
+
+            <td class="ps-3 fw-bold" th:text="${order.orderId}"></td>
+
+            <td th:text="${order.productName}"></td>
+
+            <td th:text="'$' + ${#numbers.formatDecimal(order.unitPrice, 1, 2)}"></td>
+
+            <td th:text="${order.qty}"></td>
+
+            <td th:text="'$' + ${#numbers.formatDecimal(order.totalPrice, 1, 2)}"></td>
+            <td th:text="${order.payment}"
+                th:classappend="${#strings.equalsIgnoreCase(order.payment, 'Paid') ? 'text-success fw-bold' : 'text-danger'}">
+            </td>
+
+            <td>
+            <span class="status-pill"
+                  th:classappend="'bg-' + ${#strings.toLowerCase(order.orderStatus)}"
+                  th:text="${order.orderStatus}">
+            </span>
+            </td>
+
+
+
+
+            <td class="text-end">
+                <div class="d-flex justify-content-end">
+                    <form th:action="@{/orders/{id}/done(id=${order.orderId})}" method="POST" class="me-2">
+                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">DONE</button>
+                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill"
+                            th:attr="data-order-id=${order.orderId}" onclick="handleDelete(this)">
+                        Delete
+                    </button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
         </table>
     </div>
 </div>
-
-<script>
-    // COMBINED Search and Filter Logic
+<script th:inline="javascript">
     const searchInput = document.getElementById('mainSearch');
     const filterButtons = document.querySelectorAll('.filter-btn');
     let currentStatus = 'all';
@@ -165,49 +175,45 @@
         const rows = document.querySelectorAll('#orderTable tbody tr');
 
         rows.forEach(row => {
-            const productName = row.cells[1].textContent.toLowerCase();
-            const orderId = row.cells[0].textContent.toLowerCase();
-            const status = row.cells[5].textContent.trim();
+            // Text search across the whole row
+            const rowText = row.innerText.toLowerCase();
 
-            const matchesSearch = productName.includes(searchTerm) || orderId.includes(searchTerm);
-            const matchesStatus = currentStatus === 'all' || status === currentStatus;
+            // Specifically find the Status text inside our pill
+            const statusElement = row.querySelector('.status-pill');
+            const statusValue = statusElement ? statusElement.innerText.trim().toUpperCase() : "";
 
-            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            const matchesSearch = rowText.includes(searchTerm);
+
+            let matchesStatus = false;
+            if (currentStatus === 'ALL') {
+                matchesStatus = true;
+            } else {
+                // This matches "PENDING" or "DELIVERED"
+                matchesStatus = (statusValue === currentStatus);
+            }
+
+            row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
         });
     }
 
+    // Events
     searchInput.addEventListener('input', applyFilters);
 
     filterButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             filterButtons.forEach(b => b.classList.remove('btn-primary', 'text-white'));
             this.classList.add('btn-primary', 'text-white');
-            currentStatus = this.getAttribute('data-status');
+
+            // Set currentStatus to PENDING or DELIVERED (Uppercase)
+            currentStatus = this.getAttribute('data-status').toUpperCase();
             applyFilters();
         });
     });
 
-    function deleteOrder(orderId) {
-        console.log("Attempting to delete order:", orderId); // Debugging line
-
-        if (confirm("Are you sure you want to delete order: " + orderId + "?")) {
-            fetch('/api/orders/' + orderId, {
-                method: 'DELETE'
-            })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload(); // Refresh to show it's gone
-                    } else {
-                        alert("Delete failed! Check the console.");
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-    }
-    // Delete Confirmation
-    function confirmDelete(id) {
-        if (confirm('Permanently delete order ' + id + '?')) {
-            fetch('/api/orders/' + id, { method: 'DELETE' })
+    function handleDelete(buttonElement) {
+        const id = buttonElement.getAttribute('data-order-id');
+        if (confirm("Delete order " + id + "?")) {
+            fetch('/orders/' + id + '/delete', { method: 'POST' })
                 .then(res => { if(res.ok) window.location.reload(); });
         }
     }
