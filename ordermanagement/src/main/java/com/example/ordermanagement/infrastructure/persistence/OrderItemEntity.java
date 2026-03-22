@@ -1,42 +1,39 @@
 package com.example.ordermanagement.infrastructure.persistence;
 
+import com.example.ordermanagement.domain.model.OrderItem;
 import com.example.ordermanagement.domain.value.Money;
-import com.example.ordermanagement.domain.value.OrderItem;
 import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItemEntity {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String product;
+    private String id;
+    private String sku;
+    private BigDecimal unitPrice;
     private int quantity;
-    private double price;
-
-    public OrderItemEntity() {}
 
     public static OrderItemEntity fromDomain(OrderItem item) {
-        OrderItemEntity entity = new OrderItemEntity();
-        entity.product = item.getProduct();
-        entity.quantity = item.getQuantity();
-        entity.price = item.getPrice();
-        return entity;
+        return new OrderItemEntity(
+                java.util.UUID.randomUUID().toString(),
+                item.getSku(),
+                item.getUnitPrice().amount(),
+                item.getQuantity()
+        );
     }
 
+    // --- TO DOMAIN (Loading from DB) ---
     public OrderItem toDomain() {
-        return new OrderItem(product, quantity, new Money(price));
+        return new OrderItem(
+                this.sku,
+                // Use the usd() helper to fix the constructor length error
+                Money.usd(this.unitPrice),
+                this.quantity
+        );
     }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getProduct() { return product; }
-    public void setProduct(String product) { this.product = product; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
 }

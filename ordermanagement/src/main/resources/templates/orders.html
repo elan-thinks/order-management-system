@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Seller Portal | Orders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex">
+
+<aside class="w-64 min-h-screen bg-white border-r border-gray-200 p-6 flex flex-col sticky top-0">
+    <div class="flex items-center gap-2 mb-10 text-blue-600 font-bold text-xl">
+        <i class="fas fa-store"></i> <span>Seller Portal</span>
+    </div>
+    <nav class="space-y-4 flex-1">
+        <a href="/" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+            <i class="fas fa-th-large"></i> Dashboard
+        </a>
+        <a href="/products" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+            <i class="fas fa-box"></i> Products
+        </a>
+        <a href="/orders" class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
+            <i class="fas fa-shopping-cart"></i> Orders
+        </a>
+    </nav>
+</aside>
+
+<main class="flex-1">
+    <header class="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
+        <div class="relative w-1/2">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            <input type="text" class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none" placeholder="Search orders...">
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="far fa-bell text-gray-500 text-xl cursor-pointer"></i>
+            <div class="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold">EA</div>
+        </div>
+    </header>
+
+    <section class="p-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
+            <p class="text-gray-500">Track and manage your customer orders</p>
+        </div>
+
+        <div class="grid grid-cols-5 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-sm text-gray-500 font-medium">New</p>
+                <p class="text-2xl font-bold text-blue-600" th:text="${stats.newOrders}">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-sm text-gray-500 font-medium">Processing</p>
+                <p class="text-2xl font-bold text-amber-600" th:text="${stats.processingOrders}">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-sm text-gray-500 font-medium">Shipped</p>
+                <p class="text-2xl font-bold text-purple-600" th:text="${stats.shippedOrders}">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-sm text-gray-500 font-medium">Delivered</p>
+                <p class="text-2xl font-bold text-emerald-600" th:text="${stats.deliveredOrders}">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-sm text-gray-500 font-medium">Cancelled</p>
+                <p class="text-2xl font-bold text-red-600" th:text="${stats.cancelledOrders}">0</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4">Order ID</th>
+                    <th class="px-6 py-4">Customer</th>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Total</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4 text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                <tr th:each="order : ${orders}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 font-bold text-gray-800" th:text="${order.orderId}">ORD-001</td>
+                    <td class="px-6 py-4 text-gray-600" th:text="${order.customerName}">Customer</td>
+
+                    <td class="px-6 py-4 text-gray-500" th:text="${order.orderDate}">Date</td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-800" th:text="'$' + ${order.totalPrice}">$0.00</td>
+
+                    <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-bold"
+                  th:classappend="${order.orderStatus == 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' :
+                                   (order.orderStatus == 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')}"
+                  th:text="${order.orderStatus}">STATUS</span>
+                    </td>
+                    <td class="px-6 py-4 text-end space-x-2">
+                        <form th:action="@{'/orders/' + ${order.orderId} + '/ship'}" method="post" style="display:inline;">
+                            <button title="Ship" class="text-purple-600 hover:text-purple-800"><i class="fas fa-truck"></i></button>
+                        </form>
+                        <form th:action="@{'/orders/' + ${order.orderId} + '/done'}" method="post" style="display:inline;">
+                            <button title="Complete" class="text-emerald-600 hover:text-emerald-800"><i class="fas fa-check-circle"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

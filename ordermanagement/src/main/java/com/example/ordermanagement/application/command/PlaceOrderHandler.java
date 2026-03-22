@@ -1,36 +1,48 @@
 package com.example.ordermanagement.application.command;
 
 import com.example.ordermanagement.domain.factory.OrderFactory;
-import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.model.*;
+import com.example.ordermanagement.domain.repository.*;
 import com.example.ordermanagement.domain.value.Money;
-import com.example.ordermanagement.domain.value.OrderItem;
-import com.example.ordermanagement.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaceOrderHandler {
-    private final OrderFactory factory;
-    private final OrderRepository repository;
+    private final OrderRepository orderRepo;
+    private final CustomerRepository customerRepo;
+    private final OrderFactory orderFactory;
 
-    public PlaceOrderHandler(OrderFactory factory, OrderRepository repository) {
-        this.factory = factory;
-        this.repository = repository;
+    public PlaceOrderHandler(OrderRepository orderRepo,
+                             CustomerRepository customerRepo,
+                             OrderFactory orderFactory) {
+        this.orderRepo = orderRepo;
+        this.customerRepo = customerRepo;
+        this.orderFactory = orderFactory;
     }
 
     @Transactional
     public void handle(PlaceOrderCommand command) {
-        List<OrderItem> orderItems = command.items().stream()
-                .map(i -> new OrderItem(i.product(), i.quantity(), new Money(i.price())))
-                .toList();
+        // 1. Find the customer
+        Customer customer = customerRepo.findByAuthId(command.authUserId())
+                .orElseThrow(() -> new RuntimeException("Customer not registered"));
 
-        Order order = factory.createOrder(orderItems);
+        // 2. CONVERT: Map ItemData (Command) to OrderItem (Domain)
+        List<OrderItem> domainItems = command.items().stream()
+                .map(item -> new OrderItem(
+                        item.productName(), // SKU
+                        Money.usd(BigDecimal.valueOf(item.price())), // Price as Money
+                        item.quantity() // Qty
+                ))
+                .collect(Collectors.toList());
 
-        // Calculate total quantity from items and set it on the parent Order
-        int totalQty = command.items().stream().mapToInt(i -> i.quantity()).sum();
-        order.setQuantity(totalQty); // This satisfies the DB constraint!
+        // 3. Create the aggregate using the factory with the correct list type
+        Order order = orderFactory.createOrder(customer, command.shippingAddress(), domainItems);
 
-        repository.save(order);
+        // 4. Persist
+        orderRepo.save(order);
     }
 }

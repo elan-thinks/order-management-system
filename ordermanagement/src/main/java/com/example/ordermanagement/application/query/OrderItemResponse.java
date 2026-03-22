@@ -1,7 +1,6 @@
 package com.example.ordermanagement.application.query;
 
-import com.example.ordermanagement.domain.value.OrderItem;
-import com.example.ordermanagement.domain.value.Money;
+import com.example.ordermanagement.domain.model.OrderItem;
 
 public record OrderItemResponse(
         String product,

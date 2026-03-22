@@ -1,29 +1,28 @@
 package com.example.ordermanagement.application.command;
 
-import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.model.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class UpdateStatusHandler {
-    private final OrderRepository repository;
+    private final OrderRepository orderRepo;
 
-    public UpdateStatusHandler(OrderRepository repository) {
-        this.repository = repository;
+    public UpdateStatusHandler(OrderRepository orderRepo) {
+        this.orderRepo = orderRepo;
     }
 
-    @Transactional
     public void handle(UpdateStatusCommand command) {
-        // 1. Get the Optional from the repository
-        Optional<Order> orderOptional = repository.findById(command.orderId());
+        Order order = orderRepo.findById(command.orderId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // 2. Open the "box" and perform actions if the order exists
-        orderOptional.ifPresent(order -> {
-            order.deliver(); // Now calling deliver() on the actual Order object
-            repository.save(order); // Saving the actual Order object
-        });
+        // The "Rich" domain handles the state transition logic
+        if ("SHIPPED".equalsIgnoreCase(command.newStatus())) {
+            order.shipOrder();
+        } else if ("CANCELLED".equalsIgnoreCase(command.newStatus())) {
+            order.cancelOrder();
+        }
+
+        orderRepo.save(order);
     }
 }

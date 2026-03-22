@@ -1,69 +1,72 @@
 package com.example.ordermanagement.infrastructure.persistence;
 
 import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.model.OrderItem;
+import com.example.ordermanagement.domain.model.Customer;
+import com.example.ordermanagement.domain.value.OrderStatus;
+import com.example.ordermanagement.domain.value.ContactInfo;
 import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "orders")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderEntity {
-
     @Id
-//    @Id
-    @Column(name = "id")
     private String id;
-
-    @Column(name = "order_date") // Matches UI column 1
-    private LocalDate orderDate;
-
-    @Column(name = "payment")    // Matches UI column 7
-    private String payment;
-
-    @Column(name = "status")     // Matches UI column 8
+    private String authUserId;
+    private String customerName;
     private String status;
-//    private String id;
-//    private String status;
-//    private String payment;
-//    private LocalDate orderDate;
+    private LocalDate createdAt;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")
     private List<OrderItemEntity> items;
 
-    public OrderEntity() {}
-
+    // --- FROM DOMAIN (Saving to DB) ---
     public static OrderEntity fromDomain(Order order) {
-        OrderEntity entity = new OrderEntity();
-
-        entity.id = order.getId();
-        entity.status = order.getStatus();
-        entity.payment = order.getPayment();
-        entity.orderDate = order.getDate();
-        entity.items = order.getItems().stream()
-                .map(OrderItemEntity::fromDomain)
-                .collect(Collectors.toList());
-        return entity;
+        return new OrderEntity(
+                order.getOrderId(),
+                order.getCustomer().getAuthId(), // This saves "user_001"
+                order.getCustomer().getFullName(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                order.getItems().stream()
+                        .map(OrderItemEntity::fromDomain)
+                        .collect(Collectors.toList())
+        );
     }
+
+    // --- TO DOMAIN (Loading from DB) ---
+    // Inside OrderEntity.java
 
     public Order toDomain() {
-        Order order = new Order(id, status, payment, orderDate);
-        if (items != null) {
-            items.forEach(item -> order.addItem(item.toDomain()));
-        }
-        return order;
-    }
+        // 1. Reconstruct Customer (Fixed the "n/a" to satisfy validation)
+        Customer customer = new Customer(
+                this.authUserId != null ? this.authUserId : "unknown",
+                this.customerName,
+                new ContactInfo("system@hilcoe.edu.et", "000-000-0000") // Use a valid placeholder
+        );
 
-    // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getPayment() { return payment; }
-    public void setPayment(String payment) { this.payment = payment; }
-    public LocalDate getOrderDate() { return orderDate; }
-    public void setOrderDate(LocalDate orderDate) { this.orderDate = orderDate; }
-    public List<OrderItemEntity> getItems() { return items; }
-    public void setItems(List<OrderItemEntity> items) { this.items = items; }
+        // 2. Reconstruct Items
+        List<OrderItem> domainItems = this.items.stream()
+                .map(OrderItemEntity::toDomain)
+                .collect(Collectors.toList());
+
+        // 3. Rebuild the Order Aggregate
+        return new Order(
+                this.id,
+                customer,
+                domainItems,
+                OrderStatus.valueOf(this.status),
+                this.createdAt
+        );
+    }
 }

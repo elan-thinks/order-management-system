@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SpringDataOrderRepository extends JpaRepository<OrderEntity, String> {
-    // Spring generates the SQL for save/findById automatically here
+public interface JpaCustomerRepository extends JpaRepository<CustomerEntity, String> {
+    // Leave this completely empty. Spring fills it in for you.
 }

@@ -1,35 +1,28 @@
 package com.example.ordermanagement.domain.factory;
 
 import com.example.ordermanagement.domain.model.Order;
-import com.example.ordermanagement.domain.repository.OrderRepository;
-import com.example.ordermanagement.domain.value.OrderItem;
+import com.example.ordermanagement.domain.model.Customer;
+import com.example.ordermanagement.domain.model.OrderItem;
+import com.example.ordermanagement.domain.value.Address;
+import com.example.ordermanagement.domain.value.OrderStatus;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
 import java.util.List;
 
 @Component
 public class OrderFactory {
-    private final OrderRepository repository;
 
-    public OrderFactory(OrderRepository repository) {
-        this.repository = repository;
+    // Your original ID logic, but cleaner
+    private String generateFormattedId() {
+        return String.format("ORD-%d", System.currentTimeMillis() % 100000);
     }
 
-    public Order createOrder(List<OrderItem> items) {
-        String formattedId = String.format("ORD-%d", System.currentTimeMillis() % 100000);
+    public Order createOrder(Customer customer, Address shippingAddress, List<OrderItem> items) {
+        String newId = generateFormattedId(); // Returns "ORD-XXXXX"
+        Order order = new Order(newId, customer, shippingAddress);
 
-        // Initializing with "Unpaid" so it only becomes "Paid" when "Done" is clicked
-        Order order = new Order(formattedId, "Pending", "Unpaid", LocalDate.now());
-
-        // Use a standard lambda instead of a method reference
         for (OrderItem item : items) {
             order.addItem(item);
         }
-
-        // Calculate total quantity and set it
-        int totalQty = items.stream().mapToInt(OrderItem::getQuantity).sum();
-        order.setQuantity(totalQty);
-
         return order;
     }
 }

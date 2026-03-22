@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Seller Portal | Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex">
+
+<aside class="w-64 min-h-screen bg-white border-r border-gray-200 p-6 flex flex-col sticky top-0">
+  <div class="flex items-center gap-2 mb-10 text-blue-600 font-bold text-xl">
+    <i class="fas fa-store"></i> <span>Seller Portal</span>
+  </div>
+  <nav class="space-y-4 flex-1">
+    <a href="/" class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
+      <i class="fas fa-th-large"></i> Dashboard
+    </a>
+    <a href="/products" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+      <i class="fas fa-box"></i> Products
+    </a>
+    <a href="/orders" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+      <i class="fas fa-shopping-cart"></i> Orders
+    </a>
+  </nav>
+  <div class="mt-auto pt-6 border-t border-gray-100 flex items-center gap-3">
+    <div class="w-10 h-10 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold">EA</div>
+    <div>
+      <p class="text-sm font-bold text-gray-800">Eden Admasu</p>
+      <p class="text-xs text-gray-500">Seller Account</p>
+    </div>
+  </div>
+</aside>
+
+<main class="flex-1">
+  <header class="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
+    <h2 class="text-lg font-semibold text-gray-700">Welcome back, Eden!</h2>
+    <div class="flex items-center gap-4">
+      <div class="relative">
+        <i class="far fa-bell text-gray-500 text-xl cursor-pointer"></i>
+        <span class="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full border-2 border-white"></span>
+      </div>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+        <i class="fas fa-plus mr-2"></i> New Product
+      </button>
+    </div>
+  </header>
+
+  <section class="p-8">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+      <p class="text-gray-500 text-sm">Here's what's happening with your store today.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+        <p class="text-gray-500 text-sm font-medium">Total Sales (30 Days)</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1" th:text="'$' + ${stats.totalRevenue}">$0.00</p>
+        <p class="text-xs text-green-600 font-bold mt-2"><i class="fas fa-arrow-up"></i> 12.5% from last month</p>
+        <i class="fas fa-dollar-sign absolute right-4 top-4 text-blue-100 text-4xl"></i>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+        <p class="text-gray-500 text-sm font-medium">Active Listings</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1" th:text="${stats.deliveredOrders + stats.shippedOrders + stats.newOrders}">8</p>
+        <p class="text-xs text-gray-400 mt-2">Live on storefront</p>
+        <i class="fas fa-box absolute right-4 top-4 text-blue-100 text-4xl"></i>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+        <p class="text-gray-500 text-sm font-medium">Pending Orders</p>
+        <p class="text-2xl font-bold text-amber-600 mt-1" th:text="${stats.newOrders}">4</p>
+        <p class="text-xs text-red-500 font-bold mt-2" th:text="${stats.newOrders} + ' awaiting action'">Awaiting action</p>
+        <i class="fas fa-clock absolute right-4 top-4 text-amber-50 text-4xl"></i>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+        <p class="text-gray-500 text-sm font-medium">Low Stock Alerts</p>
+        <p class="text-2xl font-bold text-red-600 mt-1">2</p>
+        <p class="text-xs text-red-400 mt-2">Immediate restock needed</p>
+        <i class="fas fa-exclamation-triangle absolute right-4 top-4 text-red-50 text-4xl"></i>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-bold text-gray-800">30-Day Sales Trend</h3>
+          <select class="text-sm border-none bg-gray-50 rounded-lg p-1 text-gray-500 outline-none">
+            <option>Last 30 Days</option>
+            <option>Last 7 Days</option>
+          </select>
+        </div>
+        <div class="h-64 w-full bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200">
+          <p class="text-gray-400 text-sm"><i class="fas fa-chart-line mr-2"></i> [Chart Integration Point]</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h3 class="font-bold text-gray-800 mb-6">Quick Actions</h3>
+        <div class="space-y-3">
+          <a href="/products" class="w-full flex items-center justify-center gap-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+            <i class="fas fa-plus"></i> Add New Product
+          </a>
+          <a href="/orders" class="w-full flex items-center justify-center gap-3 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+            <i class="fas fa-tasks"></i> Process Orders
+          </a>
+          <button class="w-full flex items-center justify-center gap-3 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+            <i class="fas fa-file-export"></i> View Reports
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
