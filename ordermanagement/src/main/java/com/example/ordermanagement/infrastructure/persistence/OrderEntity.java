@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class OrderEntity {
     @Id
-    @Column(name = "order_id") // Add this to ensure it maps to order_id, not id
+    @Column(name = "order_id", length = 50)
     private String id;
 
     private String authUserId;
@@ -23,7 +23,7 @@ public class OrderEntity {
     private String status;
     private LocalDate createdAt;
 
-    // ADDED: Shipping Address Columns
+    // Address columns stored directly in the order table
     private String street;
     private String city;
     private String zipCode;
@@ -32,7 +32,7 @@ public class OrderEntity {
     @JoinColumn(name = "order_id")
     private List<OrderItemEntity> items;
 
-    // --- FROM DOMAIN (Saving to DB) ---
+    // Saving: Domain -> Entity
     public static OrderEntity fromDomain(Order order) {
         return new OrderEntity(
                 order.getOrderId(),
@@ -40,35 +40,32 @@ public class OrderEntity {
                 order.getCustomer().getFullName(),
                 order.getStatus().name(),
                 order.getCreatedAt(),
-                // MAP THE ADDRESS HERE
                 order.getShippingAddress().street(),
                 order.getShippingAddress().city(),
                 order.getShippingAddress().zipCode(),
-                order.getItems().stream()
-                        .map(OrderItemEntity::fromDomain)
-                        .collect(Collectors.toList())
+                order.getItems().stream().map(OrderItemEntity::fromDomain).collect(Collectors.toList())
         );
     }
 
-    // --- TO DOMAIN (Loading from DB) ---
+    // Loading: Entity -> Domain
     public Order toDomain() {
         Customer customer = new Customer(
-                this.authUserId != null ? this.authUserId : "unknown",
+                this.authUserId,
                 this.customerName,
-                new ContactInfo("system@hilcoe.edu.et", "000-000-0000")
+                new ContactInfo("system@hilcoe.edu.et", "0900000000")
         );
+
+        Address address = new Address(this.street, this.city, this.zipCode);
 
         List<OrderItem> domainItems = this.items.stream()
                 .map(OrderItemEntity::toDomain)
                 .collect(Collectors.toList());
 
-        // Create the Address value object from DB columns
-        Address address = new Address(this.street, this.city, this.zipCode);
-
+        // CALLING THE 6-ARGUMENT CONSTRUCTOR (Fixes your error!)
         return new Order(
                 this.id,
                 customer,
-                address, // Pass the reconstructed address
+                address,
                 domainItems,
                 OrderStatus.valueOf(this.status),
                 this.createdAt

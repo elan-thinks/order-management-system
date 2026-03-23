@@ -89,7 +89,7 @@
                             </li>
                         </ul>
                     </td>
-                    <td th:text="${#numbers.formatCurrency(order.totalPrice)}">$0.00</td>
+                    <td th:text="${#numbers.formatCurrency(order.totalOrderPrice)}">$0.00</td>
                     <td>
         <span th:text="${order.orderStatus}"
               th:classappend="${'badge-' + order.orderStatus.toLowerCase()}">

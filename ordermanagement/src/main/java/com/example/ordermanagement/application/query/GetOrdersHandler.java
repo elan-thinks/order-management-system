@@ -21,17 +21,16 @@ public class GetOrdersHandler { // Name matches the file name
                 .collect(Collectors.toList());
     }
 
+    // Inside GetOrdersHandler.java mapping method
     private OrderResponse mapToOrderResponse(Order order) {
         return new OrderResponse(
                 order.getOrderId(),
                 order.getCustomer().getFullName(),
-                // Formatting address for the UI
                 order.getShippingAddress().street() + ", " + order.getShippingAddress().city(),
-                // Map the internal OrderItems to DTOs for the list
                 order.getItems().stream()
                         .map(OrderItemResponse::fromDomain)
                         .collect(Collectors.toList()),
-                order.getPaymentStatus(),
+                order.getPaymentStatus(), // <--- This will now work!
                 order.getStatus().name(),
                 order.calculateSubtotal().amount(),
                 order.getCreatedAt()

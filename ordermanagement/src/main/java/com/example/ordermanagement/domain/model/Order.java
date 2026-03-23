@@ -1,50 +1,21 @@
 package com.example.ordermanagement.domain.model;
 
 import com.example.ordermanagement.domain.value.*;
-import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.math.BigDecimal; // <--- ADD THIS LINE
 import java.util.*;
 
-@Entity
-@Table(name = "orders")
 public class Order {
-
-    @Id
-    @Column(name = "order_id") // This must match the DB column name exactly
-    private String orderId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    private String id;
     private Customer customer;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "order_id", referencedColumnName = "order_id")
-    private List<OrderItem> items = new ArrayList<>();
-
+    private Address shippingAddress; // The field must exist
+    private List<OrderItem> items;
+    private OrderStatus status;
     private LocalDate createdAt;
 
-    @Embedded
-    private Address shippingAddress;
-
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status;
-
-    // JPA Requirement
-    protected Order() {}
-
-    // Constructor for NEW orders (Used by OrderFactory)
-    public Order(String orderId, Customer customer, Address shippingAddress) {
-        this.orderId = orderId;
-        this.customer = customer;
-        this.shippingAddress = shippingAddress;
-        this.status = OrderStatus.PENDING;
-        this.createdAt = LocalDate.now();
-    }
-
-    // Constructor for LOADING orders from DB (Used by OrderEntity)
-    public Order(String orderId, Customer customer, Address shippingAddress, List<OrderItem> items, OrderStatus status, LocalDate createdAt) {
-        this.orderId = orderId;
+    // Constructor for LOADING from Database (This is the one the error is about)
+    public Order(String id, Customer customer, Address shippingAddress, List<OrderItem> items, OrderStatus status, LocalDate createdAt) {
+        this.id = id;
         this.customer = customer;
         this.shippingAddress = shippingAddress;
         this.items = new ArrayList<>(items);
@@ -52,21 +23,36 @@ public class Order {
         this.createdAt = createdAt;
     }
 
-    // --- DOMAIN LOGIC ---
-
-    public void addItem(OrderItem item) {
-        this.items.add(item);
+    // Constructor for NEW orders
+    public Order(String id, Customer customer, Address shippingAddress) {
+        this(id, customer, shippingAddress, new ArrayList<>(), OrderStatus.PENDING, LocalDate.now());
     }
-
     public Money calculateSubtotal() {
         return items.stream()
                 .map(OrderItem::getSubtotal)
                 .reduce(Money.usd(BigDecimal.ZERO), Money::add);
     }
+    // --- ADD THIS METHOD TO FIX THE ERROR ---
+    public String getPaymentStatus() {
+        // If the order is PENDING, it's "Unpaid".
+        // If it's SHIPPED, DELIVERED, or PAID, it's "Paid".
+        return (this.status == OrderStatus.PENDING) ? "Unpaid" : "Paid";
+    }
+
+    // Getters
+    public String getOrderId() { return id; }
+    public Customer getCustomer() { return customer; }
+    public Address getShippingAddress() { return shippingAddress; }
+    public List<OrderItem> getItems() { return items; }
+    public OrderStatus getStatus() { return status; }
+    public LocalDate getCreatedAt() { return createdAt; }
+
+    // Logic
+    public void addItem(OrderItem item) { this.items.add(item); }
 
     public void shipOrder() {
-        if (this.status != OrderStatus.PAID && this.status != OrderStatus.PENDING) {
-            throw new IllegalStateException("Order must be PENDING or PAID to be shipped.");
+        if (this.status != OrderStatus.PENDING && this.status != OrderStatus.PAID) {
+            throw new IllegalStateException("Only PENDING or PAID orders can be shipped.");
         }
         this.status = OrderStatus.SHIPPED;
     }
@@ -80,39 +66,8 @@ public class Order {
 
     public void cancelOrder() {
         if (this.status == OrderStatus.SHIPPED || this.status == OrderStatus.DELIVERED) {
-            throw new IllegalStateException("Cannot cancel an order that has already been " + this.status);
+            throw new IllegalStateException("Cannot cancel an order that is already shipped or delivered.");
         }
         this.status = OrderStatus.CANCELLED;
-    }
-
-    // --- GETTERS (Crucial for OrderEntity mapping) ---
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public List<OrderItem> getItems() {
-        return Collections.unmodifiableList(items);
-    }
-
-    public LocalDate getCreatedAt() {
-        return createdAt;
-    }
-
-    public Address getShippingAddress() {
-        return shippingAddress;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    // Helper for UI/Dashboard
-    public String getPaymentStatus() {
-        return (this.status == OrderStatus.PENDING) ? "Unpaid" : "Paid";
     }
 }

@@ -9,9 +9,9 @@ public record OrderItemResponse(
 ) {
     public static OrderItemResponse fromDomain(OrderItem item) {
         return new OrderItemResponse(
-                item.getProduct(),
+                item.getProduct(), // This now works!
                 item.getQuantity(),
-                item.getPrice() // convert Money -> double
+                item.getUnitPrice().amount().doubleValue()
         );
     }
 }
