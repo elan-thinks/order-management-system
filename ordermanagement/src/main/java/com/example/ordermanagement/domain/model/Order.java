@@ -38,6 +38,9 @@ public class Order {
         // If it's SHIPPED, DELIVERED, or PAID, it's "Paid".
         return (this.status == OrderStatus.PENDING) ? "Unpaid" : "Paid";
     }
+    public void markAsDelivered() {
+        this.status = OrderStatus.DELIVERED;
+    }
 
     // Getters
     public String getOrderId() { return id; }

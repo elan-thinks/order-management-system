@@ -44,7 +44,9 @@ public class Product {
     }
 
     public void reduceStock(int quantity) {
-        if (!hasStock(quantity)) throw new IllegalStateException("Insufficient stock");
+        if (this.stockQuantity < quantity) {
+            throw new IllegalStateException("Not enough stock for product: " + this.name);
+        }
         this.stockQuantity -= quantity;
     }
 

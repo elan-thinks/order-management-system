@@ -4,6 +4,13 @@
     <title>Seller Portal | Orders</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modern Status Badges */
+        .badge-pending { @apply bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase; }
+        .badge-shipped { @apply bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase; }
+        .badge-delivered { @apply bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase; }
+        .badge-cancelled { @apply bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase; }
+    </style>
 </head>
 <body class="bg-gray-50 flex">
 
@@ -12,13 +19,13 @@
         <i class="fas fa-store"></i> <span>Seller Portal</span>
     </div>
     <nav class="space-y-4 flex-1">
-        <a href="/" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+        <a th:href="@{/}" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
             <i class="fas fa-th-large"></i> Dashboard
         </a>
-        <a href="/products" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
+        <a th:href="@{/products}" class="flex items-center gap-3 p-3 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition">
             <i class="fas fa-box"></i> Products
         </a>
-        <a href="/orders" class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
+        <a th:href="@{/orders}" class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
             <i class="fas fa-shopping-cart"></i> Orders
         </a>
     </nav>
@@ -37,31 +44,36 @@
     </header>
 
     <section class="p-8">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
-            <p class="text-gray-500">Track and manage your customer orders</p>
+        <div th:if="${param.success}" class="mb-6 p-4 bg-emerald-100 text-emerald-700 rounded-lg flex items-center gap-3 animate-pulse">
+            <i class="fas fa-check-circle"></i>
+            <span>Action completed successfully!</span>
         </div>
 
-        <div class="grid grid-cols-5 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-sm text-gray-500 font-medium">New</p>
-                <p class="text-2xl font-bold text-blue-600" th:text="${stats.newOrders}">0</p>
+        <div class="mb-6 text-center md:text-left">
+            <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
+            <p class="text-gray-500 text-sm">Track and process your customer orders</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 text-center">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-[10px] text-gray-400 uppercase font-black">New</p>
+                <p class="text-xl font-bold text-blue-600" th:text="${stats.newOrders}">0</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-sm text-gray-500 font-medium">Processing</p>
-                <p class="text-2xl font-bold text-amber-600" th:text="${stats.processingOrders}">0</p>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Processing</p>
+                <p class="text-xl font-bold text-amber-600" th:text="${stats.processingOrders}">0</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-sm text-gray-500 font-medium">Shipped</p>
-                <p class="text-2xl font-bold text-purple-600" th:text="${stats.shippedOrders}">0</p>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Shipped</p>
+                <p class="text-xl font-bold text-purple-600" th:text="${stats.shippedOrders}">0</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-sm text-gray-500 font-medium">Delivered</p>
-                <p class="text-2xl font-bold text-emerald-600" th:text="${stats.deliveredOrders}">0</p>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Delivered</p>
+                <p class="text-xl font-bold text-emerald-600" th:text="${stats.deliveredOrders}">0</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-sm text-gray-500 font-medium">Cancelled</p>
-                <p class="text-2xl font-bold text-red-600" th:text="${stats.cancelledOrders}">0</p>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Cancelled</p>
+                <p class="text-xl font-bold text-red-600" th:text="${stats.cancelledOrders}">0</p>
             </div>
         </div>
 
@@ -71,30 +83,71 @@
                 <tr>
                     <th class="px-6 py-4">Order ID</th>
                     <th class="px-6 py-4">Customer</th>
-                    <th class="px-6 py-4">Date</th>
-                    <th class="px-6 py-4">Total</th>
-                    <th class="px-6 py-4">Status</th>
-                    <th class="px-6 py-4 text-end">Actions</th>
+                    <th class="px-6 py-4">Products</th>
+                    <th class="px-6 py-4 text-center">Total</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-center">Actions</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                <tr th:each="order : ${orders}">
-                    <td th:text="${order.orderId}">ORD-123</td>
-                    <td th:text="${order.customerName}">Eden Admasu</td>
-                    <td>
-                        <ul>
-                            <li th:each="item : ${order.items}"
-                                th:text="${item.product + ' (x' + item.quantity + ')'}">
-                                Product Name (x2)
-                            </li>
-                        </ul>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                <tr th:each="order : ${orders}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 font-mono text-xs text-gray-800" th:text="${order.orderId}">ORD-123</td>
+                    <td class="px-6 py-4 text-sm text-gray-600 font-medium" th:text="${order.customerName}">Eden Admasu</td>
+                    <td class="px-6 py-4">
+                        <div class="text-[11px] text-gray-500 space-y-1">
+                            <div th:each="item : ${order.items}" class="flex items-center gap-1">
+                                <i class="fas fa-tag text-[9px] text-gray-300"></i>
+                                <span th:text="${item.product + ' (x' + item.quantity + ')'}"></span>
+                            </div>
+                        </div>
                     </td>
-                    <td th:text="${#numbers.formatCurrency(order.totalOrderPrice)}">$0.00</td>
-                    <td>
-        <span th:text="${order.orderStatus}"
-              th:classappend="${'badge-' + order.orderStatus.toLowerCase()}">
-            PENDING
-        </span>
+                    <td class="px-6 py-4 text-center font-bold text-gray-700 text-sm" th:text="${#numbers.formatCurrency(order.totalOrderPrice)}">$0.00</td>
+                    <td class="px-6 py-4 text-center">
+                        <span th:text="${order.orderStatus}"
+                              th:class="${'badge-' + order.orderStatus.toLowerCase()}">
+                            PENDING
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center justify-center gap-3">
+
+                            <form th:if="${order.orderStatus == 'PENDING'}"
+                                  th:action="@{/orders/{id}/ship(id=${order.orderId})}" method="post">
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 shadow-sm transition flex items-center gap-1">
+                                    <i class="fas fa-truck"></i> SHIP
+                                </button>
+                            </form>
+
+                            <form th:if="${order.orderStatus == 'SHIPPED'}"
+                                  th:action="@{/orders/{id}/done(id=${order.orderId})}" method="post">
+                                <button type="submit" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-700 shadow-sm transition flex items-center gap-1">
+                                    <i class="fas fa-check-double"></i> DELIVER
+                                </button>
+                            </form>
+
+                            <form th:if="${order.orderStatus == 'PENDING'}"
+                                  th:action="@{/orders/{id}/cancel(id=${order.orderId})}" method="post"
+                                  onsubmit="return confirm('Wait! Are you sure you want to cancel this order?')">
+                                <button type="submit" class="text-gray-300 hover:text-red-500 transition tooltip" title="Cancel Order">
+                                    <i class="fas fa-times-circle text-lg"></i>
+                                </button>
+                            </form>
+
+                            <div th:if="${order.orderStatus == 'DELIVERED'}" class="flex flex-col items-center text-emerald-500">
+                                <i class="fas fa-check-circle text-lg"></i>
+                                <span class="text-[9px] font-bold uppercase tracking-tighter">Done</span>
+                            </div>
+
+                            <div th:if="${order.orderStatus == 'CANCELLED'}" class="text-red-300 opacity-50 italic text-[10px]">
+                                Voided
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders)}">
+                    <td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">
+                        No orders found. Use the storefront to place an order!
                     </td>
                 </tr>
                 </tbody>
