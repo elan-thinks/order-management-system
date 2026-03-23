@@ -26,7 +26,8 @@
       <p class="text-sm text-gray-500 mb-4" th:text="${product.stockQuantity} + ' units left'">10 left</p>
 
       <form th:action="@{/store/buy}" method="post">
-        <input type="hidden" name="name" th:value="${product.name}">
+        <input type="hidden" name="productName" th:value="${product.name}">
+
         <input type="number" name="qty" value="1" min="1" class="w-full border rounded mb-2 p-1 text-center">
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
           Add to Cart

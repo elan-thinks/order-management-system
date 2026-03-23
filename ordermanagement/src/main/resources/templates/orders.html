@@ -78,27 +78,23 @@
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                <tr th:each="order : ${orders}" class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 font-bold text-gray-800" th:text="${order.orderId}">ORD-001</td>
-                    <td class="px-6 py-4 text-gray-600" th:text="${order.customerName}">Customer</td>
-
-                    <td class="px-6 py-4 text-gray-500" th:text="${order.orderDate}">Date</td>
-
-                    <td class="px-6 py-4 font-semibold text-gray-800" th:text="'$' + ${order.totalPrice}">$0.00</td>
-
-                    <td class="px-6 py-4">
-            <span class="px-3 py-1 rounded-full text-xs font-bold"
-                  th:classappend="${order.orderStatus == 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' :
-                                   (order.orderStatus == 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')}"
-                  th:text="${order.orderStatus}">STATUS</span>
+                <tr th:each="order : ${orders}">
+                    <td th:text="${order.orderId}">ORD-123</td>
+                    <td th:text="${order.customerName}">Eden Admasu</td>
+                    <td>
+                        <ul>
+                            <li th:each="item : ${order.items}"
+                                th:text="${item.product + ' (x' + item.quantity + ')'}">
+                                Product Name (x2)
+                            </li>
+                        </ul>
                     </td>
-                    <td class="px-6 py-4 text-end space-x-2">
-                        <form th:action="@{'/orders/' + ${order.orderId} + '/ship'}" method="post" style="display:inline;">
-                            <button title="Ship" class="text-purple-600 hover:text-purple-800"><i class="fas fa-truck"></i></button>
-                        </form>
-                        <form th:action="@{'/orders/' + ${order.orderId} + '/done'}" method="post" style="display:inline;">
-                            <button title="Complete" class="text-emerald-600 hover:text-emerald-800"><i class="fas fa-check-circle"></i></button>
-                        </form>
+                    <td th:text="${#numbers.formatCurrency(order.totalPrice)}">$0.00</td>
+                    <td>
+        <span th:text="${order.orderStatus}"
+              th:classappend="${'badge-' + order.orderStatus.toLowerCase()}">
+            PENDING
+        </span>
                     </td>
                 </tr>
                 </tbody>

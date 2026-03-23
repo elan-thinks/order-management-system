@@ -30,35 +30,27 @@ public class PlaceOrderHandler {
 
     @Transactional
     public void handle(PlaceOrderCommand command) {
-        // 1. Find the customer
         Customer customer = customerRepo.findByAuthId(command.authUserId())
                 .orElseThrow(() -> new RuntimeException("Customer not registered"));
 
-        // 2. CONVERT & VALIDATE STOCK
         List<OrderItem> domainItems = command.items().stream()
                 .map(item -> {
-                    // FIXED: Now we can actually find the product in the DB
-                    Product product = productRepository.findAll().stream()
-                            .filter(p -> p.getSku().equals(item.productName()))
-                            .findFirst()
+                    Product product = productRepository.findByName(item.productName())
                             .orElseThrow(() -> new RuntimeException("Product not found: " + item.productName()));
 
-                    // FIXED: Reduce the stock in the database!
                     product.reduceStock(item.quantity());
                     productRepository.save(product);
 
+                    // USE THE PRODUCT'S REAL PRICE, NOT THE 0.0 FROM THE COMMAND
                     return new OrderItem(
                             product.getSku(),
-                            product.getPrice(), // Use the price from the actual product record
+                            product.getPrice(), // <--- Critical Fix
                             item.quantity()
                     );
                 })
                 .collect(Collectors.toList());
 
-        // 3. Create the aggregate using the factory
         Order order = orderFactory.createOrder(customer, command.shippingAddress(), domainItems);
-
-        // 4. Persist the new order
         orderRepo.save(order);
     }
 }

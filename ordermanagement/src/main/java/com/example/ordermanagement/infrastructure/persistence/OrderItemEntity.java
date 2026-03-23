@@ -13,25 +13,24 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class OrderItemEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID) // Let Hibernate handle the ID generation
     private String id;
+
     private String sku;
     private BigDecimal unitPrice;
     private int quantity;
 
     public static OrderItemEntity fromDomain(OrderItem item) {
-        return new OrderItemEntity(
-                java.util.UUID.randomUUID().toString(),
-                item.getSku(),
-                item.getUnitPrice().amount(),
-                item.getQuantity()
-        );
+        OrderItemEntity entity = new OrderItemEntity();
+        entity.setSku(item.getSku());
+        entity.setUnitPrice(item.getUnitPrice().amount());
+        entity.setQuantity(item.getQuantity());
+        return entity;
     }
 
-    // --- TO DOMAIN (Loading from DB) ---
     public OrderItem toDomain() {
         return new OrderItem(
                 this.sku,
-                // Use the usd() helper to fix the constructor length error
                 Money.usd(this.unitPrice),
                 this.quantity
         );
