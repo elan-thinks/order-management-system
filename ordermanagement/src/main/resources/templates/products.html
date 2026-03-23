@@ -64,14 +64,22 @@
                     <td class="px-6 py-4 font-medium text-gray-800" th:text="${product.name}">Product Name</td>
                     <td class="px-6 py-4 text-gray-500" th:text="${product.sku}">SKU-001</td>
                     <td class="px-6 py-4">
-        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold"
-              th:text="${product.stockQuantity} + ' In Stock'">45 In Stock</span>
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold"
+                         th:text="${product.stockQuantity} + ' In Stock'">45 In Stock</span>
                     </td>
                     <td class="px-6 py-4 font-semibold text-gray-800"
-                        th:text="'$' + ${product.price.amount}">$0.00</td> <td class="px-6 py-4 text-end">
-                    <button class="text-blue-600 hover:text-blue-800 mr-3"><i class="fas fa-edit"></i></button>
-                    <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
-                </td>
+                        th:text="'$' + ${product.price.amount}">$0.00</td>
+                    <td class="px-6 py-4 text-end">
+                        <form th:action="@{/orders}" method="post" class="flex items-center justify-end gap-2">
+                            <input type="hidden" name="product" th:value="${product.name}">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="price" th:value="${product.price.amount}">
+
+                            <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition">
+                                <i class="fas fa-shopping-cart mr-1"></i> Create Order
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 </tbody>
             </table>

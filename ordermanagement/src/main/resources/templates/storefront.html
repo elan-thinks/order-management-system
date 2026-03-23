@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>HiLCoE Student Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-10">
+<div class="max-w-4xl mx-auto">
+  <header class="flex justify-between items-center mb-10">
+    <h1 class="text-3xl font-bold text-gray-800">HiLCoE Campus Store</h1>
+    <a href="/" class="text-blue-600 hover:underline"><i class="fas fa-user-shield"></i> Seller Admin</a>
+  </header>
+
+  <div th:if="${param.success}" class="bg-green-100 text-green-700 p-4 rounded-lg mb-6">
+    🎉 Order placed successfully! Check the Seller Dashboard.
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div th:each="product : ${products}" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div class="w-full h-32 bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+        <i class="fas fa-box text-gray-300 text-4xl"></i>
+      </div>
+      <h3 class="font-bold text-lg" th:text="${product.name}">Product Name</h3>
+      <p class="text-blue-600 font-bold text-xl my-2" th:text="'$' + ${product.price.amount}">$0.00</p>
+      <p class="text-sm text-gray-500 mb-4" th:text="${product.stockQuantity} + ' units left'">10 left</p>
+
+      <form th:action="@{/store/buy}" method="post">
+        <input type="hidden" name="name" th:value="${product.name}">
+        <input type="number" name="qty" value="1" min="1" class="w-full border rounded mb-2 p-1 text-center">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+          Add to Cart
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

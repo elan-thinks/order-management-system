@@ -39,12 +39,12 @@ public class UpdateQuantityHandler {
 
         // 2. Create the new Money object using the static 'usd' helper
         // This fixes the "actual and formal argument lists differ in length" error
+        // Inside handle method
         BigDecimal priceAsBigDecimal = BigDecimal.valueOf(targetItem.getPrice());
         Money unitPrice = Money.usd(priceAsBigDecimal);
 
-        // 3. Add the updated item (Correct order: SKU, Money, Quantity)
+// MUST BE: (SKU, Money, Quantity)
         order.addItem(new OrderItem(targetItem.getSku(), unitPrice, command.newQuantity()));
-
         repository.save(order);
     }
 }

@@ -16,7 +16,7 @@ public class Order {
     // Inside Order.java
     // Inside your Order class
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", referencedColumnName = "authId") // Changed from auth_user_id to authId
+    @JoinColumn(name = "customer_id", referencedColumnName = "id") // Point to the Long id, not authId
     private Customer customer;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
