@@ -52,33 +52,37 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
       <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
-        <p class="text-gray-500 text-sm font-medium">Total Sales (30 Days)</p>
-        <p class="text-2xl font-bold text-gray-800 mt-1" th:text="'$' + ${stats.totalRevenue}">$0.00</p>
-        <p class="text-xs text-green-600 font-bold mt-2"><i class="fas fa-arrow-up"></i> 12.5% from last month</p>
+        <p class="text-gray-500 text-sm font-medium">Total Sales (Completed)</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1"
+           th:text="${#numbers.formatCurrency(stats.totalRevenue)}">$0.00</p>
+        <p class="text-xs text-green-600 font-bold mt-2"><i class="fas fa-arrow-up"></i> Live revenue</p>
         <i class="fas fa-dollar-sign absolute right-4 top-4 text-blue-100 text-4xl"></i>
       </div>
 
       <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
         <p class="text-gray-500 text-sm font-medium">Active Listings</p>
-        <p class="text-2xl font-bold text-gray-800 mt-1" th:text="${stats.deliveredOrders + stats.shippedOrders + stats.newOrders}">8</p>
-        <p class="text-xs text-gray-400 mt-2">Live on storefront</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1" th:text="${stats.activeListings}">0</p>
+        <p class="text-xs text-gray-400 mt-2">Unique products in store</p>
         <i class="fas fa-box absolute right-4 top-4 text-blue-100 text-4xl"></i>
       </div>
 
       <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
         <p class="text-gray-500 text-sm font-medium">Pending Orders</p>
-        <p class="text-2xl font-bold text-amber-600 mt-1" th:text="${stats.newOrders}">4</p>
-        <p class="text-xs text-red-500 font-bold mt-2" th:text="${stats.newOrders} + ' awaiting action'">Awaiting action</p>
+        <p class="text-2xl font-bold text-amber-600 mt-1" th:text="${stats.newOrders}">0</p>
+        <p class="text-xs text-red-500 font-bold mt-2" th:text="${stats.newOrders} + ' awaiting action'">0 awaiting action</p>
         <i class="fas fa-clock absolute right-4 top-4 text-amber-50 text-4xl"></i>
       </div>
 
       <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
         <p class="text-gray-500 text-sm font-medium">Low Stock Alerts</p>
-        <p class="text-2xl font-bold text-red-600 mt-1">2</p>
-        <p class="text-xs text-red-400 mt-2">Immediate restock needed</p>
+        <p class="text-2xl font-bold text-red-600 mt-1" th:text="${stats.lowStockCount}">0</p>
+        <p class="text-xs text-red-400 mt-2" th:if="${stats.lowStockCount > 0}">Immediate restock needed</p>
+        <p class="text-xs text-emerald-500 mt-2" th:if="${stats.lowStockCount == 0}">Inventory healthy</p>
         <i class="fas fa-exclamation-triangle absolute right-4 top-4 text-red-50 text-4xl"></i>
       </div>
+
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

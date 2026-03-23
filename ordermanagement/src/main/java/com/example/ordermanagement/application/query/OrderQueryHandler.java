@@ -1,7 +1,9 @@
 package com.example.ordermanagement.application.query;
 
+import com.example.ordermanagement.domain.model.Product;
 import com.example.ordermanagement.domain.repository.OrderRepository;
 import com.example.ordermanagement.domain.model.Order;
+import com.example.ordermanagement.domain.repository.ProductRepository;
 import com.example.ordermanagement.domain.value.OrderStatus;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -12,9 +14,11 @@ import java.util.stream.Collectors;
 public class OrderQueryHandler {
 
     private final OrderRepository repository;
+    private final ProductRepository productRepository; // Added this
 
-    public OrderQueryHandler(OrderRepository repository) {
+    public OrderQueryHandler(OrderRepository repository, ProductRepository productRepository) {
         this.repository = repository;
+        this.productRepository = productRepository;
     }
 
     public List<OrderResponse> handle(GetOrdersQuery query) {
@@ -26,10 +30,13 @@ public class OrderQueryHandler {
     // THIS IS THE MISSING METHOD CAUSING THE ERROR
     public OrderStatsResponse getStats() {
         List<Order> allOrders = repository.findAll();
+        List<Product> allProducts = productRepository.findAll(); // Get products for stock alerts
 
         long totalOrders = allOrders.size();
 
+        // 1. Calculate Total Revenue from DELIVERED orders (Accounting Best Practice)
         BigDecimal totalRevenue = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED)
                 .map(order -> order.calculateSubtotal().amount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -39,14 +46,22 @@ public class OrderQueryHandler {
         long deliveredCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.DELIVERED).count();
         long cancelledCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.CANCELLED).count();
 
+        // 3. Logic for the Dashboard Cards
+        long activeListings = allProducts.size();
+        long lowStockCount = allProducts.stream()
+                .filter(p -> p.getStockQuantity() < 5) // Assuming 5 is your threshold
+                .count();
+
         return new OrderStatsResponse(
-                totalOrders,
+                allOrders.size(),
                 totalRevenue,
                 pendingCount,
-                paidCount,
+                0, // paidCount (if not used)
                 shippedCount,
                 deliveredCount,
-                cancelledCount
+                cancelledCount,
+                activeListings, // New field
+                lowStockCount   // New field
         );
     }
 
