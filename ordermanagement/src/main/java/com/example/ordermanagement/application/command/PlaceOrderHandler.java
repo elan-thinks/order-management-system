@@ -35,16 +35,21 @@ public class PlaceOrderHandler {
 
         // 2. Process each item (Update stock and prepare domain items)
         for (var itemData : command.items()) {
+            // Find product by name to get authoritative SKU and Price
             Product product = productRepository.findByName(itemData.productName())
                     .orElseThrow(() -> new RuntimeException("Product not found: " + itemData.productName()));
 
-            // Logic: Deduct stock from the Product aggregate
-            product.reduceStock(itemData.quantity());
+            // Logic check: Verify stock availability
+            if (product.getStockQuantity() < itemData.quantity()) {
+                throw new IllegalStateException("Not enough stock for " + product.getName());
+            }
 
-            // Persist the stock change
+            // Deduct stock from the Product aggregate
+            product.reduceStock(itemData.quantity());
+            // Persist the stock change back to MySQL
             productRepository.save(product);
 
-            // Create the Domain item using the Product's authoritative SKU and Price
+            // Create the Domain item using the Product's SKU and Price from the DB
             domainItems.add(new OrderItem(
                     product.getSku(),
                     product.getPrice(),
@@ -52,10 +57,10 @@ public class PlaceOrderHandler {
             ));
         }
 
-        // 3. Create the Order using the Factory (keeps ID generation logic centralized)
+        // 3. Create the Order using the Factory
         Order order = orderFactory.createOrder(customer, command.shippingAddress(), domainItems);
 
-        // 4. Save the final Order (and its items via cascade)
+        // 4. Save the final Order
         orderRepo.save(order);
     }
 }

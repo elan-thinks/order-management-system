@@ -42,7 +42,13 @@ public class Product {
     public boolean hasStock(int quantity) {
         return this.stockQuantity >= quantity;
     }
+// inside Product.java
 
+    public void setStockQuantity(int stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
+
+    // Optional: A more "Domain-Driven" way to do it
     public void reduceStock(int quantity) {
         if (this.stockQuantity < quantity) {
             throw new IllegalStateException("Not enough stock for product: " + this.name);
