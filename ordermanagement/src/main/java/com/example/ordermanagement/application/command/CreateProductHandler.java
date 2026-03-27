@@ -20,7 +20,9 @@ public class CreateProductHandler {
     public void handle(CreateProductCommand command) {
         // 1. Convert the double price into a Money record
         Money price = Money.usd(BigDecimal.valueOf(command.price()));
-
+        if (repository.findBySku(command.sku()).isPresent()) {
+            throw new RuntimeException("A product with SKU " + command.sku() + " already exists!");
+        }
         // 2. FIXED: Pass 'null' for the ID (the first argument)
         // Required: (Long, String, String, Money, int)
         Product product = new Product(

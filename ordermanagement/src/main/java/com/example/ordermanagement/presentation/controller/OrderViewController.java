@@ -80,11 +80,18 @@ public class OrderViewController {
     }
 
     @PostMapping("/products")
-    public String addProduct(@ModelAttribute CreateProductCommand command) {
-        createProductHandler.handle(command);
-        return "redirect:/products";
+    public String addProduct(@ModelAttribute CreateProductCommand command, Model model) {
+        try {
+            createProductHandler.handle(command);
+            return "redirect:/products?success=true";
+        } catch (RuntimeException e) {
+            // Instead of crashing, we stay on the page and show the message
+            model.addAttribute("errorMessage", "Error: " + e.getMessage());
+            model.addAttribute("products", productRepository.findAll()); // Refresh list
+            model.addAttribute("activePage", "products");
+            return "products";
+        }
     }
-
     @PostMapping("/orders")
     public String addOrder(@RequestParam String product,
                            @RequestParam int quantity,
@@ -115,7 +122,7 @@ public class OrderViewController {
     public String shipOrder(@PathVariable String id) { // Change to String!
         UpdateStatusCommand command = new UpdateStatusCommand(id, "SHIPPED");
         updateHandler.handle(command);
-        return "redirect:/";
+        return "redirect:/orders";
     }
 
     @PostMapping("/orders/{id}/cancel")
@@ -123,6 +130,6 @@ public class OrderViewController {
         UpdateStatusCommand command = new UpdateStatusCommand(id, "CANCELLED");
 
         updateHandler.handle(command);
-        return "redirect:/";
+        return "redirect:/orders";
     }
 }
