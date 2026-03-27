@@ -27,29 +27,27 @@ public class PlaceOrderHandler {
 
     @Transactional
     public void handle(PlaceOrderCommand command) {
+        System.out.println("DEBUG: Starting PlaceOrder for customer: " + command.authUserId());
+
         // 1. Find the Customer
         Customer customer = customerRepo.findByAuthId(command.authUserId())
-                .orElseThrow(() -> new RuntimeException("Customer not registered"));
+                .orElseThrow(() -> new RuntimeException("Customer not registered: " + command.authUserId()));
+        System.out.println("DEBUG: Found Customer ID: " + customer.getId());
 
         List<OrderItem> domainItems = new ArrayList<>();
 
-        // 2. Process each item (Update stock and prepare domain items)
         for (var itemData : command.items()) {
-            // Find product by name to get authoritative SKU and Price
-            Product product = productRepository.findByName(itemData.productName())
+            System.out.println("DEBUG: Looking for product: " + itemData.productName());
+
+            Product product = productRepository.findBySku(itemData.productName())
+                    .or(() -> productRepository.findByName(itemData.productName()))
                     .orElseThrow(() -> new RuntimeException("Product not found: " + itemData.productName()));
 
-            // Logic check: Verify stock availability
-            if (product.getStockQuantity() < itemData.quantity()) {
-                throw new IllegalStateException("Not enough stock for " + product.getName());
-            }
+            System.out.println("DEBUG: Found Product! Current Stock: " + product.getStockQuantity());
 
-            // Deduct stock from the Product aggregate
             product.reduceStock(itemData.quantity());
-            // Persist the stock change back to MySQL
             productRepository.save(product);
 
-            // Create the Domain item using the Product's SKU and Price from the DB
             domainItems.add(new OrderItem(
                     product.getSku(),
                     product.getPrice(),
@@ -57,10 +55,14 @@ public class PlaceOrderHandler {
             ));
         }
 
-        // 3. Create the Order using the Factory
-        Order order = orderFactory.createOrder(customer, command.shippingAddress(), domainItems);
+        // 3. Create the Order
+        System.out.println("DEBUG: Calling OrderFactory...");
+        Order order = orderFactory.createOrder(customer.getId(), command.shippingAddress(), domainItems);
+
+        System.out.println("DEBUG: Order created with PublicID: " + order.getPublicId());
 
         // 4. Save the final Order
         orderRepo.save(order);
+        System.out.println("DEBUG: Order saved successfully!");
     }
 }

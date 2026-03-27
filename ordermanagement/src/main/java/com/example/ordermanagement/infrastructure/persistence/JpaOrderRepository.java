@@ -2,12 +2,12 @@ package com.example.ordermanagement.infrastructure.persistence;
 
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.OrderRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository; // Use @Repository instead of @Component
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Repository
 public class JpaOrderRepository implements OrderRepository {
 
     private final SpringDataOrderRepository springRepo;
@@ -18,7 +18,8 @@ public class JpaOrderRepository implements OrderRepository {
 
     @Override
     public void save(Order order) {
-        springRepo.save(OrderEntity.fromDomain(order));
+        OrderEntity entity = OrderEntity.fromDomain(order);
+        springRepo.save(entity);
     }
 
     @Override
@@ -34,12 +35,16 @@ public class JpaOrderRepository implements OrderRepository {
     }
 
     @Override
-    public Optional<Order> findById(String id) {
+    public Optional<Order> findById(Long id) { // Changed to Long
         return springRepo.findById(id).map(OrderEntity::toDomain);
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(Long id) { // Changed to Long
         springRepo.deleteById(id);
+    }
+    @Override
+    public Optional<Order> findByPublicId(java.util.UUID publicId) {
+        return springRepo.findByPublicId(publicId).map(OrderEntity::toDomain);
     }
 }

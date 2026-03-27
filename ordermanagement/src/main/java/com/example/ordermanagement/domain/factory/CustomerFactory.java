@@ -5,18 +5,11 @@ import com.example.ordermanagement.domain.value.ContactInfo;
 
 public class CustomerFactory {
 
-    /**
-     * Assembles a new Customer entity.
-     * @param authId The ID from your Login/Security system (e.g., "user_123" or email)
-     * @param name The customer's full name
-     * @param email The email for business contact
-     * @param phone The phone number for delivery contact
-     */
     public static Customer createNewCustomer(String authId, String name, String email, String phone) {
-        // 1. Create the Value Object first (it validates itself)
+        // 1. Create the Value Object
         ContactInfo contact = new ContactInfo(email, phone);
 
-        // 2. Return the Entity linked to the Auth system
-        return new Customer(authId, name, contact);
+        // 2. Return the Domain Model with a NULL id (MySQL will generate the real ID on save)
+        return new Customer(null, authId, name, contact);
     }
 }

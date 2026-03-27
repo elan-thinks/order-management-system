@@ -1,6 +1,7 @@
 package com.example.ordermanagement.application.query;
 
 import com.example.ordermanagement.domain.model.Product;
+import com.example.ordermanagement.domain.repository.CustomerRepository;
 import com.example.ordermanagement.domain.repository.OrderRepository;
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.ProductRepository;
@@ -15,10 +16,13 @@ public class OrderQueryHandler {
 
     private final OrderRepository repository;
     private final ProductRepository productRepository; // Added this
+    private final CustomerRepository customerRepository;
 
-    public OrderQueryHandler(OrderRepository repository, ProductRepository productRepository) {
+
+    public OrderQueryHandler(OrderRepository repository, ProductRepository productRepository, CustomerRepository customerRepository) {
         this.repository = repository;
         this.productRepository = productRepository;
+        this.customerRepository = customerRepository;
     }
 
     public List<OrderResponse> handle(GetOrdersQuery query) {
@@ -66,9 +70,13 @@ public class OrderQueryHandler {
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
+        // 3. Look up the customer name using the ID
+        String name = customerRepository.findById(order.getCustomerId())
+                .map(customer -> customer.getFullName()) // Assumes getFullName() exists in Customer
+                .orElse("Customer #" + order.getCustomerId()); // Fallback if not found
         return new OrderResponse(
-                order.getOrderId(),
-                order.getCustomer().getFullName(),
+                String.valueOf(order.getPublicId()), // Safe way to handle Long to String
+                name,
                 order.getShippingAddress().street() + ", " + order.getShippingAddress().city(),
                 order.getItems().stream()
                         .map(OrderItemResponse::fromDomain)

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
@@ -14,57 +15,53 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderEntity {
-    @Id
-    @Column(name = "order_id", length = 50)
-    private String id;
 
-    private String authUserId;
-    private String customerName;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id") // This ensures your PK is called order_id in the DB
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private UUID publicId; // Hibernate handles UUIDs automatically!
+
+    private Long customerId; // Matches Rule 2
     private String status;
     private LocalDate createdAt;
 
-    // Address columns stored directly in the order table
     private String street;
     private String city;
     private String zipCode;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id") // Foreign key in order_items table
     private List<OrderItemEntity> items;
 
-    // Saving: Domain -> Entity
     public static OrderEntity fromDomain(Order order) {
-        return new OrderEntity(
-                order.getOrderId(),
-                order.getCustomer().getAuthId(),
-                order.getCustomer().getFullName(),
-                order.getStatus().name(),
-                order.getCreatedAt(),
-                order.getShippingAddress().street(),
-                order.getShippingAddress().city(),
-                order.getShippingAddress().zipCode(),
-                order.getItems().stream().map(OrderItemEntity::fromDomain).collect(Collectors.toList())
-        );
+        OrderEntity entity = new OrderEntity();
+        entity.setId(order.getOrderId());
+        entity.setPublicId(order.getPublicId());
+        entity.setCustomerId(order.getCustomerId());
+        entity.setStatus(order.getStatus().name());
+        entity.setCreatedAt(order.getCreatedAt());
+        entity.setStreet(order.getShippingAddress().street());
+        entity.setCity(order.getShippingAddress().city());
+        entity.setZipCode(order.getShippingAddress().zipCode());
+        entity.setItems(order.getItems().stream()
+                .map(OrderItemEntity::fromDomain)
+                .collect(Collectors.toList()));
+        return entity;
     }
 
-    // Loading: Entity -> Domain
     public Order toDomain() {
-        Customer customer = new Customer(
-                this.authUserId,
-                this.customerName,
-                new ContactInfo("system@hilcoe.edu.et", "0900000000")
-        );
-
         Address address = new Address(this.street, this.city, this.zipCode);
-
         List<OrderItem> domainItems = this.items.stream()
                 .map(OrderItemEntity::toDomain)
                 .collect(Collectors.toList());
 
-        // CALLING THE 6-ARGUMENT CONSTRUCTOR (Fixes your error!)
         return new Order(
                 this.id,
-                customer,
+                this.publicId,
+                this.customerId,
                 address,
                 domainItems,
                 OrderStatus.valueOf(this.status),

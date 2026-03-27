@@ -16,9 +16,9 @@ public class OrderFactory {
         return String.format("ORD-%d", System.currentTimeMillis() % 100000);
     }
 
-    public Order createOrder(Customer customer, Address shippingAddress, List<OrderItem> items) {
-        String newId = generateFormattedId(); // Returns "ORD-XXXXX"
-        Order order = new Order(newId, customer, shippingAddress);
+    public Order createOrder(Long customerId, Address shippingAddress, List<OrderItem> items) {
+//        String newId = generateFormattedId(); // Returns "ORD-XXXXX"
+        Order order = new Order(customerId, shippingAddress);
 
         for (OrderItem item : items) {
             order.addItem(item);

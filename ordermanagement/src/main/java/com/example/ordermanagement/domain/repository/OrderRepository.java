@@ -8,6 +8,11 @@ public interface OrderRepository {
     void save(Order order);
     List<Order> findAll();
     long count();
-    Optional<Order> findById(String id);
-    void deleteById(String id);
+
+    // CHANGE: These must be Long to match your implementation
+    Optional<Order> findById(Long id);
+    void deleteById(Long id);
+
+    // Add this too if you want to find orders by the UUID string from the UI
+    Optional<Order> findByPublicId(java.util.UUID publicId);
 }

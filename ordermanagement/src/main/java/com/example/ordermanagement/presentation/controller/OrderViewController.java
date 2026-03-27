@@ -99,15 +99,15 @@ public class OrderViewController {
     }
 
     @PostMapping("/orders/{id}/done")
-    public String markAsDone(@PathVariable String id) {
-        updateHandler.handle(new UpdateStatusCommand(id, "DELIVERED"));
+    public String markAsDone(@PathVariable Long id) { // Changed String to Long
+        updateHandler.handle(new UpdateStatusCommand(id.toString(), "DELIVERED"));
         return "redirect:/orders";
     }
 
     @DeleteMapping("/orders/{id}")
     @ResponseBody
-    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
-        deleteHandler.handle(new DeleteOrderCommand(id));
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) { // Changed String to Long
+        deleteHandler.handle(new DeleteOrderCommand(id.toString()));
         return ResponseEntity.ok().build();
     }
 

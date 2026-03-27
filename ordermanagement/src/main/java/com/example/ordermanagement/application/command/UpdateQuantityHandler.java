@@ -21,8 +21,10 @@ public class UpdateQuantityHandler {
 
     @Transactional
     public void handle(UpdateQuantityCommand command) {
-        Order order = repository.findById(command.orderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Long id = Long.valueOf(command.orderId());
+
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
 
         OrderItem targetItem = null;
         for (OrderItem item : order.getItems()) {

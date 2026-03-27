@@ -14,6 +14,9 @@ public class DeleteOrderHandler {
 
     @Transactional
     public void handle(DeleteOrderCommand command) {
-        repository.deleteById(command.orderId());
+        // FIXED: Convert the String ID from the command to a Long
+        Long id = Long.valueOf(command.orderId());
+
+        repository.deleteById(id);
     }
 }

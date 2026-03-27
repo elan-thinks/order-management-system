@@ -9,6 +9,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "order_items")
 @Data
+//@AllArgsConstructor
 @NoArgsConstructor // Keep this for JPA
 public class OrderItemEntity {
 

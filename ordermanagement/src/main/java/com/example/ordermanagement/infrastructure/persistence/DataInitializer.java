@@ -9,8 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    // Use your Domain Repository interface here
     private final CustomerRepository customerRepo;
+
+    public CustomerRepository getCustomerRepo() {
+        return customerRepo;
+    }
 
     public DataInitializer(CustomerRepository customerRepo) {
         this.customerRepo = customerRepo;
@@ -18,14 +21,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // 1. Search by the String 'authId', NOT the Long 'id'
         if (customerRepo.findByAuthId("user_001").isEmpty()) {
 
-            // 2. Create the Value Object for contact info
             ContactInfo contact = new ContactInfo("ema@hilcoe.edu.et", "0911-000-000");
 
-            // 3. Create the Customer (Notice: No 'Long id' passed here!)
+            // Updated: Passing 'null' for the ID because the Database will generate it
             Customer newCustomer = new Customer(
+                    null,
                     "user_001",
                     "Ema",
                     contact

@@ -13,7 +13,6 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    // This fixes the "cannot find symbol: method getPrice()" error
     public double getPrice() {
         return unitPrice.amount().doubleValue();
     }

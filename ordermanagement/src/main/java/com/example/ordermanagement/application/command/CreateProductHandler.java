@@ -18,22 +18,21 @@ public class CreateProductHandler {
 
     @Transactional
     public void handle(CreateProductCommand command) {
-        // 1. Convert the double price into a Money record using the .usd() helper
-        // Since your record requires (BigDecimal, Currency), .usd() handles the Currency for you.
+        // 1. Convert the double price into a Money record
         Money price = Money.usd(BigDecimal.valueOf(command.price()));
 
-        // 2. Use the strict constructor required by your Product model
-        // Order: (String name, String sku, Money price, int inventory)
+        // 2. FIXED: Pass 'null' for the ID (the first argument)
+        // Required: (Long, String, String, Money, int)
         Product product = new Product(
-                command.name(),
+                null,           // <--- The missing Long ID
                 command.sku(),
+                command.name(),
                 price,
                 command.inventory()
         );
 
-        // 3. Set additional fields that aren't in the constructor
-        product.setCategory(command.category());
-        product.setStatus("Active");
+        // 3. Optional: If your Product model has these setters
+        product.setStockQuantity(command.inventory());
 
         repository.save(product);
     }

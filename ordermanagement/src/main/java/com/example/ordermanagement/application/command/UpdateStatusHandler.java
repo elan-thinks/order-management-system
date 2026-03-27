@@ -15,9 +15,10 @@ public class UpdateStatusHandler {
 
     @Transactional // CRITICAL: Ensures the database update "sticks"
     public void handle(UpdateStatusCommand command) {
-        Order order = orderRepo.findById(command.orderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Long id = Long.valueOf(command.orderId());
 
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
         String status = command.newStatus().toUpperCase();
 
         // Check which domain method to trigger

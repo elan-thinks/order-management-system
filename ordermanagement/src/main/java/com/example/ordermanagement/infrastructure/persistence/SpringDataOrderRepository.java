@@ -1,9 +1,9 @@
 package com.example.ordermanagement.infrastructure.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.Optional;
+import java.util.UUID;
 
-@Repository
-public interface SpringDataOrderRepository extends JpaRepository<OrderEntity, String> {
-    // Spring generates the SQL for save/findById automatically here
+public interface SpringDataOrderRepository extends JpaRepository<OrderEntity, Long> {
+    Optional<OrderEntity> findByPublicId(UUID publicId);
 }
