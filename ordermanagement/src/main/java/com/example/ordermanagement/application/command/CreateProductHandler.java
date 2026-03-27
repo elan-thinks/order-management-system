@@ -30,7 +30,8 @@ public class CreateProductHandler {
                 command.sku(),
                 command.name(),
                 price,
-                command.inventory()
+                command.inventory(),
+                command.category()
         );
 
         // 3. Optional: If your Product model has these setters

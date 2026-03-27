@@ -32,37 +32,31 @@ public class PlaceOrderHandler {
         // 1. Find the Customer
         Customer customer = customerRepo.findByAuthId(command.authUserId())
                 .orElseThrow(() -> new RuntimeException("Customer not registered: " + command.authUserId()));
-        System.out.println("DEBUG: Found Customer ID: " + customer.getId());
 
-        List<OrderItem> domainItems = new ArrayList<>();
+        // 2. Find the single Product directly from the command
+        // We use command.productName() and command.qty() now
+        Product product = productRepository.findBySku(command.productName())
+                .or(() -> productRepository.findByName(command.productName()))
+                .orElseThrow(() -> new RuntimeException("Product not found: " + command.productName()));
 
-        for (var itemData : command.items()) {
-            System.out.println("DEBUG: Looking for product: " + itemData.productName());
+        System.out.println("DEBUG: Found Product: " + product.getName() + " | Stock: " + product.getStockQuantity());
 
-            Product product = productRepository.findBySku(itemData.productName())
-                    .or(() -> productRepository.findByName(itemData.productName()))
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + itemData.productName()));
+        // 3. Logic for stock and creating domain items
+        product.reduceStock(command.qty()); // This is where the "Not enough stock" check happens
+        productRepository.save(product);
 
-            System.out.println("DEBUG: Found Product! Current Stock: " + product.getStockQuantity());
+        // We create a list with just this one item to satisfy the OrderFactory
+        List<OrderItem> domainItems = List.of(new OrderItem(
+                product.getSku(),
+                product.getPrice(),
+                command.qty()
+        ));
 
-            product.reduceStock(itemData.quantity());
-            productRepository.save(product);
-
-            domainItems.add(new OrderItem(
-                    product.getSku(),
-                    product.getPrice(),
-                    itemData.quantity()
-            ));
-        }
-
-        // 3. Create the Order
+        // 4. Create and Save the Order
         System.out.println("DEBUG: Calling OrderFactory...");
         Order order = orderFactory.createOrder(customer.getId(), command.shippingAddress(), domainItems);
 
-        System.out.println("DEBUG: Order created with PublicID: " + order.getPublicId());
-
-        // 4. Save the final Order
         orderRepo.save(order);
-        System.out.println("DEBUG: Order saved successfully!");
+        System.out.println("DEBUG: Order saved successfully with PublicID: " + order.getPublicId());
     }
 }

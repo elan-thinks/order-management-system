@@ -1,11 +1,11 @@
 package com.example.ordermanagement.presentation.controller;
 
 import com.example.ordermanagement.application.command.*;
-import com.example.ordermanagement.application.query.GetOrdersQuery;
-import com.example.ordermanagement.application.query.OrderQueryHandler;
+import com.example.ordermanagement.application.query.*;
+import com.example.ordermanagement.domain.model.Customer;
+import com.example.ordermanagement.domain.model.Product;
+import com.example.ordermanagement.domain.repository.CustomerRepository;
 import com.example.ordermanagement.domain.repository.ProductRepository;
-import com.example.ordermanagement.domain.repository.CustomerRepository; // Added
-import com.example.ordermanagement.domain.model.Customer; // Added
 import com.example.ordermanagement.domain.value.Address;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,13 +24,15 @@ public class OrderViewController {
     private final UpdateStatusHandler updateHandler;
     private final CreateProductHandler createProductHandler;
     private final ProductRepository productRepository;
-    private final CustomerRepository customerRepository; // 1. Add CustomerRepository
+    private final CustomerRepository customerRepository;
+    private final GetOrdersHandler getOrdersHandler;
 
     public OrderViewController(OrderQueryHandler q, PlaceOrderHandler p,
                                DeleteOrderHandler d, UpdateStatusHandler u,
                                CreateProductHandler createProductHandler,
                                ProductRepository productRepository,
-                               CustomerRepository customerRepository) { // 2. Add to Constructor
+                               CustomerRepository customerRepository,
+                               GetOrdersHandler getOrdersHandler) {
         this.queryHandler = q;
         this.placeHandler = p;
         this.deleteHandler = d;
@@ -38,6 +40,7 @@ public class OrderViewController {
         this.createProductHandler = createProductHandler;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
+        this.getOrdersHandler = getOrdersHandler;
     }
 
     @ModelAttribute
@@ -45,35 +48,40 @@ public class OrderViewController {
         model.addAttribute("stats", queryHandler.getStats());
     }
 
-    @GetMapping
+    @GetMapping("/")
     public String dashboard(Model model) {
-        model.addAttribute("stats", queryHandler.getStats());
         model.addAttribute("activePage", "dashboard");
         return "dashboard";
     }
 
     @GetMapping("/orders")
-    public String ordersList(Model model) {
-        model.addAttribute("orders", queryHandler.handle(new GetOrdersQuery()));
-        model.addAttribute("stats", queryHandler.getStats());
+    public String listOrders(@RequestParam(required = false) String query, Model model) {
+        // This is now the ONLY method for /orders
+        GetOrdersQuery getOrdersQuery = new GetOrdersQuery(query);
+        List<OrderResponse> orders = getOrdersHandler.handle(getOrdersQuery);
+
+        model.addAttribute("orders", orders);
         model.addAttribute("activePage", "orders");
         return "orders";
     }
 
     @GetMapping("/products")
-    public String productsList(Model model) {
-        model.addAttribute("products", productRepository.findAll());
+    public String listProducts(@RequestParam(required = false) String query, Model model) {
+        List<Product> products;
+        if (query != null && !query.trim().isEmpty()) {
+            products = productRepository.search(query);
+        } else {
+            products = productRepository.findAll();
+        }
+        model.addAttribute("products", products);
         model.addAttribute("activePage", "products");
         return "products";
     }
 
-    // 3. ADD THIS: Profile mapping to show your Eden Admasu data
     @GetMapping("/profile")
     public String showProfile(Model model) {
-        // Fetch the static user 'user_001' from the database
         Customer user = customerRepository.findByAuthId("user_001")
                 .orElseThrow(() -> new RuntimeException("Static user not found in DB!"));
-
         model.addAttribute("user", user);
         model.addAttribute("activePage", "profile");
         return "profile";
@@ -85,51 +93,42 @@ public class OrderViewController {
             createProductHandler.handle(command);
             return "redirect:/products?success=true";
         } catch (RuntimeException e) {
-            // Instead of crashing, we stay on the page and show the message
             model.addAttribute("errorMessage", "Error: " + e.getMessage());
-            model.addAttribute("products", productRepository.findAll()); // Refresh list
-            model.addAttribute("activePage", "products");
+            model.addAttribute("products", productRepository.findAll());
             return "products";
         }
     }
+
     @PostMapping("/orders")
     public String addOrder(@RequestParam String product,
-                           @RequestParam int quantity,
-                           @RequestParam double price) {
-        Address defaultAddress = new Address();
-        placeHandler.handle(new PlaceOrderCommand(
-                "user_001",
-                defaultAddress,
-                List.of(new PlaceOrderCommand.ItemData(product, quantity, price))
-        ));
+                           @RequestParam int quantity) {
+        Address defaultAddress = new Address("HiLCoE Block B", "Addis Ababa", "Ethiopia");
+        placeHandler.handle(new PlaceOrderCommand("user_001", product, quantity, defaultAddress));
         return "redirect:/orders";
     }
 
     @PostMapping("/orders/{id}/done")
-    public String markAsDone(@PathVariable String id) { // CHANGED: Long to String
+    public String markAsDone(@PathVariable String id) {
         updateHandler.handle(new UpdateStatusCommand(id, "DELIVERED"));
+        return "redirect:/orders";
+    }
+
+    @PostMapping("/orders/{id}/ship")
+    public String shipOrder(@PathVariable String id) {
+        updateHandler.handle(new UpdateStatusCommand(id, "SHIPPED"));
+        return "redirect:/orders";
+    }
+
+    @PostMapping("/orders/{id}/cancel")
+    public String cancelOrder(@PathVariable String id) {
+        updateHandler.handle(new UpdateStatusCommand(id, "CANCELLED"));
         return "redirect:/orders";
     }
 
     @DeleteMapping("/orders/{id}")
     @ResponseBody
-    public ResponseEntity<Void> deleteOrder(@PathVariable String id) { // CHANGED: Long to String
+    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
         deleteHandler.handle(new DeleteOrderCommand(id));
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/orders/{id}/ship")
-    public String shipOrder(@PathVariable String id) { // Change to String!
-        UpdateStatusCommand command = new UpdateStatusCommand(id, "SHIPPED");
-        updateHandler.handle(command);
-        return "redirect:/orders";
-    }
-
-    @PostMapping("/orders/{id}/cancel")
-    public String cancelOrder(@PathVariable String id) { // Change Long to String here
-        UpdateStatusCommand command = new UpdateStatusCommand(id, "CANCELLED");
-
-        updateHandler.handle(command);
-        return "redirect:/orders";
     }
 }

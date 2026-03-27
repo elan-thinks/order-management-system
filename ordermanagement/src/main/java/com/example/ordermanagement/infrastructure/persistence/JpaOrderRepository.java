@@ -3,6 +3,8 @@ package com.example.ordermanagement.infrastructure.persistence;
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.OrderRepository;
 import org.springframework.stereotype.Repository; // Use @Repository instead of @Component
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,4 +51,9 @@ public class JpaOrderRepository implements OrderRepository {
         springRepo.deleteById(id);
     }
 
+    // Inside JpaOrderRepository.java
+    @Override
+    public List<BigDecimal> getSalesForLast7Days(java.time.LocalDate startDate) {
+        return springRepo.getSalesForLast7Days(startDate);
+    }
 }

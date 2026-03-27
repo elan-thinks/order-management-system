@@ -27,10 +27,16 @@
 
 <main class="flex-1">
     <header class="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
-        <div class="relative w-1/2">
+        <form th:action="@{/products}" method="get" id="searchForm" class="relative w-1/2">
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-            <input type="text" class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none" placeholder="Search products...">
-        </div>
+            <input type="text"
+                   id="searchInput"
+                   name="query"
+                   th:value="${param.query}"
+                   class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none"
+                   placeholder="Search by name or SKU..."
+                   autocomplete="off">
+        </form>
         <div class="flex items-center gap-4">
             <i class="far fa-bell text-gray-500 text-xl cursor-pointer"></i>
             <div class="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold">EA</div>
@@ -141,6 +147,26 @@
         const modal = document.getElementById('productModal');
         modal.classList.toggle('hidden');
     }
+
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
+    let timeout = null;
+
+    searchInput.addEventListener('input', function () {
+        // Clear the timer if the user is still typing
+        clearTimeout(timeout);
+
+        // Wait 300ms after the last keystroke before submitting
+        timeout = setTimeout(() => {
+            searchForm.submit();
+        }, 300);
+    });
+
+    // Keep the cursor at the end of the text after the page reloads
+    const val = searchInput.value;
+    searchInput.value = '';
+    searchInput.focus();
+    searchInput.value = val;
 </script>
 
 </body>

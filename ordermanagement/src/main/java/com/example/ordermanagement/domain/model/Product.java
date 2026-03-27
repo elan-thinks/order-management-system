@@ -7,13 +7,15 @@ public class Product {
     private String sku;
     private String name;
     private Money price;
+    private String category;
     private int stockQuantity;
 
-    public Product(Long id, String sku, String name, Money price, int stockQuantity) {
+    public Product(Long id, String sku, String name, Money price, int stockQuantity, String category) {
         this.id = id;
         this.sku = sku;
         this.name = name;
         this.price = price;
+        this.category = category;
         this.stockQuantity = stockQuantity;
     }
 
@@ -39,4 +41,7 @@ public class Product {
 
     public int getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }

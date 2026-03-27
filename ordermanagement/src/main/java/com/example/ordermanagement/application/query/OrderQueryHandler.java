@@ -8,6 +8,7 @@ import com.example.ordermanagement.domain.repository.ProductRepository;
 import com.example.ordermanagement.domain.value.OrderStatus;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,9 +16,8 @@ import java.util.stream.Collectors;
 public class OrderQueryHandler {
 
     private final OrderRepository repository;
-    private final ProductRepository productRepository; // Added this
+    private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
-
 
     public OrderQueryHandler(OrderRepository repository, ProductRepository productRepository, CustomerRepository customerRepository) {
         this.repository = repository;
@@ -31,51 +31,65 @@ public class OrderQueryHandler {
                 .collect(Collectors.toList());
     }
 
-    // THIS IS THE MISSING METHOD CAUSING THE ERROR
-    public OrderStatsResponse getStats() {
+    public DashboardStats getStats() {
         List<Order> allOrders = repository.findAll();
-        List<Product> allProducts = productRepository.findAll(); // Get products for stock alerts
+        List<Product> allProducts = productRepository.findAll();
 
-        long totalOrders = allOrders.size();
-
-        // 1. Calculate Total Revenue from DELIVERED orders (Accounting Best Practice)
+        // 1. Calculate Total Revenue (Only from Completed/Delivered orders)
         BigDecimal totalRevenue = allOrders.stream()
                 .filter(o -> o.getStatus() == OrderStatus.DELIVERED)
                 .map(order -> order.calculateSubtotal().amount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long pendingCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.PENDING).count();
-        long paidCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.PAID).count();
-        long shippedCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.SHIPPED).count();
-        long deliveredCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.DELIVERED).count();
-        long cancelledCount = allOrders.stream().filter(o -> o.getStatus() == OrderStatus.CANCELLED).count();
-
-        // 3. Logic for the Dashboard Cards
+        // 2. Inventory Stats
         long activeListings = allProducts.size();
         long lowStockCount = allProducts.stream()
-                .filter(p -> p.getStockQuantity() < 5) // Assuming 5 is your threshold
+                .filter(p -> p.getStockQuantity() < 5)
                 .count();
 
-        return new OrderStatsResponse(
-                allOrders.size(),
+        // 3. Status Counts (Matching your orders.html exactly)
+        long newOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PENDING).count();
+
+        long processingOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PAID).count();
+
+        long shippedOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.SHIPPED).count();
+
+        long deliveredOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED).count();
+
+        long cancelledOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CANCELLED).count();
+
+        // 4. Chart Data
+        LocalDate sevenDaysAgo = LocalDate.now().minusDays(6);
+        List<BigDecimal> weeklySales = repository.getSalesForLast7Days(sevenDaysAgo);
+
+        // Ensure we don't pass a null list to JavaScript
+        if (weeklySales == null) weeklySales = List.of();
+
+        return new DashboardStats(
                 totalRevenue,
-                pendingCount,
-                0, // paidCount (if not used)
-                shippedCount,
-                deliveredCount,
-                cancelledCount,
-                activeListings, // New field
-                lowStockCount   // New field
+                activeListings,
+                newOrders,
+                processingOrders,
+                shippedOrders,
+                deliveredOrders,
+                cancelledOrders,
+                lowStockCount,
+                weeklySales
         );
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
-        // 3. Look up the customer name using the ID
         String name = customerRepository.findById(order.getCustomerId())
-                .map(customer -> customer.getFullName()) // Assumes getFullName() exists in Customer
-                .orElse("Customer #" + order.getCustomerId()); // Fallback if not found
+                .map(customer -> customer.getFullName())
+                .orElse("Customer #" + order.getCustomerId());
+
         return new OrderResponse(
-                String.valueOf(order.getPublicId()), // Safe way to handle Long to String
+                String.valueOf(order.getPublicId()),
                 name,
                 order.getShippingAddress().street() + ", " + order.getShippingAddress().city(),
                 order.getItems().stream()

@@ -10,4 +10,5 @@ public interface ProductRepository {
     Optional<Product> findBySku(String sku);
     Optional<Product> findByName(String name);
     List<Product> findAll();
+    List<Product> search(String query);
 }

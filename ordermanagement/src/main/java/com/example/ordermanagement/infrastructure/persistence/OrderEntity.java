@@ -4,7 +4,10 @@ import com.example.ordermanagement.domain.model.*;
 import com.example.ordermanagement.domain.value.*;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,6 +30,8 @@ public class OrderEntity {
     private Long customerId; // Matches Rule 2
     private String status;
     private LocalDate createdAt;
+    private BigDecimal amount; // <--- This is the name Hibernate knows
+//    private LocalDateTime createdAt; // <--- This is the name Hibernate knows
 
     private String street;
     private String city;

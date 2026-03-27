@@ -1,9 +1,9 @@
 package com.example.ordermanagement.application.query;
 
-import com.example.ordermanagement.domain.repository.OrderRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-public record GetOrdersQuery() {}
-
+// Add the 'searchTerm' field so the constructor can accept a String
+public record GetOrdersQuery(String searchTerm) {
+    // This allows you to call new GetOrdersQuery() with no arguments too
+    public GetOrdersQuery() {
+        this(null);
+    }
+}

@@ -42,4 +42,13 @@ public class JpaProductRepository implements ProductRepository {
                 .map(ProductEntity::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Product> search(String query) {
+        // We use a case-insensitive search for better UX
+        return jpaRepo.findByNameContainingIgnoreCaseOrSkuContainingIgnoreCase(query, query)
+                .stream()
+                .map(ProductEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

@@ -33,10 +33,16 @@
 
 <main class="flex-1">
     <header class="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
-        <div class="relative w-1/2">
+        <form th:action="@{/orders}" method="get" id="orderSearchForm" class="relative w-1/2">
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-            <input type="text" class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none" placeholder="Search orders...">
-        </div>
+            <input type="text"
+                   id="orderSearchInput"
+                   name="query"
+                   th:value="${param.query}"
+                   class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:outline-none"
+                   placeholder="Search by Customer or Order ID..."
+                   autocomplete="off">
+        </form>
         <div class="flex items-center gap-4">
             <i class="far fa-bell text-gray-500 text-xl cursor-pointer"></i>
             <div class="w-8 h-8 bg-blue-600 rounded-full text-white flex items-center justify-center font-bold">EA</div>
@@ -91,10 +97,11 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white">
                 <tr th:each="order : ${orders}" class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 font-mono text-xs text-gray-800" th:text="${order.orderId}">ORD-123</td>
-                    <td class="px-6 py-4 text-sm text-gray-600 font-medium" th:text="${order.customerName}">Eden Admasu</td>
+                    <td class="px-6 py-4 font-mono text-[14px] text-gray-400">
+                        <span th:text="${#strings.substring(order.orderId, 0, 8).toUpperCase()}">ORD-ABCD</span>
+                    </td>                    <td class="px-6 py-4 text-sm text-gray-600 font-medium" th:text="${order.customerName}">Eden Admasu</td>
                     <td class="px-6 py-4">
-                        <div class="text-[11px] text-gray-500 space-y-1">
+                        <div class="text-[14px] text-gray-500 space-y-1">
                             <div th:each="item : ${order.items}" class="flex items-center gap-1">
                                 <i class="fas fa-tag text-[9px] text-gray-300"></i>
                                 <span th:text="${item.product + ' (x' + item.quantity + ')'}"></span>
@@ -155,5 +162,26 @@
         </div>
     </section>
 </main>
+
+<script>
+    const orderInput = document.getElementById('orderSearchInput');
+    const orderForm = document.getElementById('orderSearchForm');
+    let orderTimeout = null;
+
+    orderInput.addEventListener('input', function () {
+        clearTimeout(orderTimeout);
+        orderTimeout = setTimeout(() => {
+            orderForm.submit();
+        }, 300); // 300ms pause before searching
+    });
+
+    // Auto-focus and keep cursor at the end
+    if (orderInput.value.length > 0) {
+        orderInput.focus();
+        const val = orderInput.value;
+        orderInput.value = '';
+        orderInput.value = val;
+    }
+</script>
 </body>
 </html>

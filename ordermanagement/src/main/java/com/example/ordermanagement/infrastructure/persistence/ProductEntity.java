@@ -20,6 +20,7 @@ public class ProductEntity {
     private String sku;
     private String name;
     private int stockQuantity;
+    private String category;
 
     @Embedded
     private Money price;
@@ -31,10 +32,11 @@ public class ProductEntity {
         entity.setName(product.getName());
         entity.setStockQuantity(product.getStockQuantity());
         entity.setPrice(product.getPrice());
+        entity.setCategory(product.getCategory());
         return entity;
     }
 
     public Product toDomain() {
-        return new Product(this.id, this.sku, this.name, this.price, this.stockQuantity);
+        return new Product(this.id, this.sku, this.name, this.price, this.stockQuantity,this.category);
     }
 }
