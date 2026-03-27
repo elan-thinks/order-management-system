@@ -99,27 +99,30 @@ public class OrderViewController {
     }
 
     @PostMapping("/orders/{id}/done")
-    public String markAsDone(@PathVariable Long id) { // Changed String to Long
-        updateHandler.handle(new UpdateStatusCommand(id.toString(), "DELIVERED"));
+    public String markAsDone(@PathVariable String id) { // CHANGED: Long to String
+        updateHandler.handle(new UpdateStatusCommand(id, "DELIVERED"));
         return "redirect:/orders";
     }
 
     @DeleteMapping("/orders/{id}")
     @ResponseBody
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) { // Changed String to Long
-        deleteHandler.handle(new DeleteOrderCommand(id.toString()));
+    public ResponseEntity<Void> deleteOrder(@PathVariable String id) { // CHANGED: Long to String
+        deleteHandler.handle(new DeleteOrderCommand(id));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/orders/{id}/ship")
-    public String shipOrder(@PathVariable String id) {
-        updateHandler.handle(new UpdateStatusCommand(id, "SHIPPED"));
-        return "redirect:/orders";
+    public String shipOrder(@PathVariable String id) { // Change to String!
+        UpdateStatusCommand command = new UpdateStatusCommand(id, "SHIPPED");
+        updateHandler.handle(command);
+        return "redirect:/";
     }
 
     @PostMapping("/orders/{id}/cancel")
-    public String cancelOrder(@PathVariable String id) {
-        updateHandler.handle(new UpdateStatusCommand(id, "CANCELLED"));
-        return "redirect:/orders";
+    public String cancelOrder(@PathVariable String id) { // Change Long to String here
+        UpdateStatusCommand command = new UpdateStatusCommand(id, "CANCELLED");
+
+        updateHandler.handle(command);
+        return "redirect:/";
     }
 }

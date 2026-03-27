@@ -8,7 +8,7 @@ public record OrderResponse(
         String orderId,
         String customerName,
         String shippingAddress,
-        List<OrderItemResponse> items, // This must be a List!
+        List<OrderItemResponse> items,
         String paymentStatus,
         String orderStatus,
         BigDecimal totalOrderPrice,

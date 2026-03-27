@@ -38,13 +38,15 @@ public class JpaOrderRepository implements OrderRepository {
     public Optional<Order> findById(Long id) { // Changed to Long
         return springRepo.findById(id).map(OrderEntity::toDomain);
     }
+    @Override
+    public Optional<Order> findByPublicId(java.util.UUID publicId) {
+        // Assuming your springRepo has findByPublicId defined
+        return springRepo.findByPublicId(publicId).map(OrderEntity::toDomain);
+    }
 
     @Override
     public void deleteById(Long id) { // Changed to Long
         springRepo.deleteById(id);
     }
-    @Override
-    public Optional<Order> findByPublicId(java.util.UUID publicId) {
-        return springRepo.findByPublicId(publicId).map(OrderEntity::toDomain);
-    }
+
 }
