@@ -1,127 +1,207 @@
 
------
-
+----------
 # 📦 Order Management System: Enterprise Edition
 
 ### **The Gold Standard for Clean Architecture & DDD**
 
-This project is a high-performance **Seller & Student Marketplace** engineered with a strict **Hexagonal Architecture (Ports and Adapters)**. By decoupling the core business logic from technical details like MySQL, UUID generation, and Thymeleaf, we’ve built a system that is resilient, type-safe, and ready for production.
+This project is a **Seller & Student Marketplace** designed as a practical implementation of modern **Software Architecture and Design Principles**.
 
-![img_4.png](img_4.png)
+Built using **Hexagonal Architecture (Ports & Adapters)**, this system enforces a strict separation between business logic and external concerns like databases, UI, and frameworks.
 
-![img_5.png](img_5.png)
------
+> 💡 The goal is not just functionality — but demonstrating **how real-world scalable systems are designed.**
 
-## 📑 Strategic Navigation
+---
 
-* [🚀 The Evolution](https://www.google.com/search?q=%231-the-evolution-)
-* [🧠 Domain Layer (The Heart)](https://www.google.com/search?q=%232-domain-layer-aggregates--value-objects-)
-* [⚙️ Application Layer (The Orchestrator)](https://www.google.com/search?q=%233-application-layer-the-orchestrator-)
-* [🔌 Infrastructure Layer (The Tools)](https://www.google.com/search?q=%234-infrastructure-layer-the-tools-)
-* [🎨 Presentation Layer (The UI)](https://www.google.com/search?q=%235-presentation-layer-the-ui-)
-* [🔄 The UUID & Triple-Model Flow](https://www.google.com/search?q=%236-the-id-strategy--triple-model-flow-)
-* [⚡ CQRS Implementation](https://www.google.com/search?q=%237-implementation-of-cqrs-)
-* [🛠️ Getting Started](https://www.google.com/search?q=%238-how-to-run-)
+![System UI](img_4.png)
+![Dashboard](img_5.png)
 
------
+---
 
-## 1\. The Evolution 🚀
+## 📑 Navigation Guide
 
-We transitioned this system through three major architectural milestones:
+### 👀 Overview
+* [🚀 1. Project Background](#1-project-background-)
+* [🎯 2. Key Features & Goals](#2-key-features--goals-)
 
-1.  **From Sequential IDs to UUIDs:** We moved away from predictable database IDs to **UUID (Universally Unique Identifiers)** for public-facing URLs to enhance security and system decoupling.
-2.  **Strict Type Safety:** Resolved complex Java Type Mismatches between Web (String), Application (UUID), and Persistence (Long) layers.
-3.  **Cross-Aggregate Mapping:** Implemented logic to resolve `Customer` names from `Order` ID references in the Application layer, keeping our database "Normalized" but our UI "Human-Readable."
+### 🏗 Architecture & Design
+* [🧠 3. Domain Layer (DDD)](#3-domain-layer-ddd)
+* [⚙️ 4. Application Layer (Use Cases)](#4-application-layer-the-orchestrator)
+* [🔌 5. Infrastructure Layer](#5-infrastructure-layer-the-tools)
+* [🎨 6. Presentation Layer](#6-presentation-layer-the-ui)
 
------
+### 🔄 System Design Decisions
+* [🔑 7. ID Strategy & Data Flow](#7-the-id-strategy--triple-model-flow)
+* [⚡ 8. CQRS Implementation](#8-implementation-of-cqrs)
 
-## 🧠 2. Domain Layer: Aggregates & Value Objects
+### 🚀 Getting Started
+* [🛠️ 9. How to Run](#9-how-to-run-)
 
-We use **Domain-Driven Design (DDD)** to ensure data consistency.
+---
 
-* **Order (Aggregate Root) 👑:** Manages the entire lifecycle. It contains the logic for status transitions (PENDING → SHIPPED → DELIVERED).
-* **Public ID (UUID) 🔑:** Every Order carries a `publicId`. This is what the outside world sees, while the database uses a hidden `Long` for performance.
-* **OrderItem (Value Object) 📦:** Immutable units. They don't have their own identity; they are part of the Order's state.
-* **OrderFactory 🏗️:** The "Birthplace" of orders. It ensures every new order is assigned a fresh UUID and starts in the correct state.
+## 1. Project Background 🚀
 
------
+This system evolved through key architectural improvements:
 
-## ⚙️ 3. Application Layer: The Orchestrator
+1. **From Sequential IDs → UUIDs**  
+   Replaced predictable database IDs with secure, public-facing UUIDs.
 
-This layer coordinates the **Use Cases**. It is the only place where the "Join" between Customers and Orders happens.
+2. **Strict Type Safety Across Layers**  
+   Eliminated mismatches between:
+    - Web Layer → `String`
+    - Domain Layer → `UUID`
+    - Database Layer → `Long`
 
-* **Command Handlers (Write Path):** (e.g., `PlaceOrderHandler`, `UpdateStatusHandler`). They convert UI Strings into Domain UUIDs and execute business logic.
-* **Query Handlers (Read Path):** (e.g., `OrderQueryHandler`). These transform raw data into `OrderResponse` DTOs, fetching the **Customer Name** from the `CustomerRepository` so the seller sees "Eden Admasu" instead of "ID: 1."
-* **Dependency Inversion:** This layer defines the **Repository Interfaces**. It doesn't care *how* MySQL works; it only cares that the data can be saved.
+3. **Cross-Aggregate Mapping**  
+   Maintained a **normalized database** while presenting **human-readable UI data**.
 
------
+---
 
-## 🔌 4. Infrastructure Layer: The Tools
+## 2. Key Features & Goals 🎯
 
-The "Heavy Lifting" layer where technology lives.
+* 🔐 Secure Public IDs using UUIDs (No predictable URLs)
+* 🧱 Clean Architecture (Hexagonal + DDD)
+* ⚡ CQRS Pattern (Separate Read & Write Logic)
+* 🎯 Type-Safe Layer Communication (String ↔ UUID ↔ Long)
+* 🛍️ Dual UI System:
+    * Seller Dashboard (Admin Panel)
+    * Student Storefront (Customer View)
+* 🔍 Search & Stock Awareness (Real-time UX improvements)
 
-* **Persistence Model (`OrderEntity`):** Handles the JPA mapping to MySQL. It uses `@Column(unique = true)` for the UUID and `@Id` for the primary key.
-* **Repository Implementation:** Implements the Domain interfaces. We added custom logic to `findByPublicId(UUID)` to bridge the gap between the UI and the Database.
-* **Database Management:** Uses `spring.jpa.hibernate.ddl-auto=update` to manage schema changes like adding the new UUID columns without losing data.
+---
 
------
+## 3. Domain Layer (DDD) 🧠
 
-## 🎨 5. Presentation Layer: The UI
+The **heart of the system**, where all business rules live.
 
-* **Modern Shop UI:** A Tailwind-powered student storefront featuring product categories, stock alerts (Red warnings for low stock), and a professional navigation bar.
-* **Seller Dashboard:** A data-rich admin panel for managing order fulfillment.
-* **Type-Safe Controllers:** All `@PathVariable` arguments are handled as `String` to support UUIDs, preventing "400 Bad Request" errors found in standard ID-based systems.
+### Core Concepts:
 
------
+* **Order (Aggregate Root) 👑**
+    - Controls lifecycle: `PENDING → SHIPPED → DELIVERED`
+    - Ensures business invariants
 
-## 🔄 6. The ID Strategy & Triple-Model Flow
+* **Public ID (UUID) 🔑**
+    - External identity of the system
+    - Hides internal database structure
 
-To prevent "leaky abstractions," we maintain three distinct versions of an Order:
+* **OrderItem (Value Object) 📦**
+    - Immutable
+    - Represents items within an order
 
-1.  **Domain Model (`Order.java`)**: Pure logic. Uses `UUID` for identity.
-2.  **Persistence Model (`OrderEntity.java`)**: Database logic. Uses `Long` for indexing and `UUID` for searching.
-3.  **Presentation Model (`OrderResponse.java`)**: UI logic. Flattens data and converts everything to `String` for the browser.
+* **OrderFactory 🏗️**
+    - Responsible for:
+        - Creating new Orders
+        - Assigning UUIDs
+        - Setting initial state
 
-| Layer | ID Type | Purpose |
-| :--- | :--- | :--- |
-| **Database** | `Long` | Fast indexing & Primary Keys |
-| **API / URL** | `UUID (String)` | Security & External Referencing |
-| **Domain** | `UUID` | Business Identity |
+---
 
------
+## 4. Application Layer: The Orchestrator ⚙️
 
-## ⚡ 7. Implementation of CQRS
+This layer handles **use cases and system workflows**.
 
-| Feature | Commands (Write) ✍️ | Queries (Read) 📖 |
-| :--- | :--- | :--- |
-| **Primary Goal** | Data Integrity | High-Speed Display |
-| **Logic** | Validates stock & status | Resolves Customer Names |
-| **Result** | Saves to Repository | Returns DTOs |
+### Responsibilities:
 
------
+* **Command Handlers (Write Operations) ✍️**
+    - Example: `PlaceOrderHandler`
+    - Convert UI input → Domain models
+    - Enforce business rules before saving
 
-## 8\. How to Run 🛠️
+* **Query Handlers (Read Operations) 📖**
+    - Example: `OrderQueryHandler`
+    - Transform data → UI-friendly DTOs
 
-### **1. MySQL Setup**
+* **Dependency Inversion**
+    - Defines repository interfaces
+    - Keeps domain independent from infrastructure
+
+---
+
+## 5. Infrastructure Layer: The Tools 🔌
+
+Handles all **external systems and technical details**.
+
+### Components:
+
+* **Persistence Model (`OrderEntity`)**
+    - Maps domain → database (JPA)
+
+* **Repository Implementations**
+    - Implements domain interfaces
+
+* **Database Management**
+    - MySQL + Hibernate
+    - Automatic schema updates (`ddl-auto`)
+
+---
+
+## 6. Presentation Layer: The UI 🎨
+
+Where users interact with the system.
+
+### Interfaces:
+
+* 🛍️ **Student Storefront**
+    - Browse products
+    - Search in real-time
+    - View stock availability
+
+* 🧑‍💼 **Seller Dashboard**
+    - Manage orders
+    - Track status
+    - Handle fulfillment
+
+* 🔒 **Type-Safe Controllers**
+    - Accept `String` inputs (UUIDs)
+    - Prevent request errors (`400 Bad Request`)
+
+---
+
+## 7. The ID Strategy & Triple-Model Flow 🔄
+
+A key architectural decision for **security + performance**:
+
+| Layer        | ID Type         | Purpose                          |
+|--------------|----------------|----------------------------------|
+| Database     | `Long`         | Fast indexing & primary keys     |
+| API / URL    | `UUID (String)`| Secure external exposure         |
+| Domain       | `UUID`         | Business identity consistency    |
+
+> 💡 This separation prevents data leaks while maintaining performance.
+
+---
+
+## 8. Implementation of CQRS ⚡
+
+Command Query Responsibility Segregation improves clarity and scalability.
+
+| Feature         | Commands (Write) ✍️     | Queries (Read) 📖        |
+|-----------------|------------------------|--------------------------|
+| Goal            | Data Integrity         | Fast Data Retrieval      |
+| Logic           | Validation & Rules     | Data Transformation      |
+| Output          | Save to DB             | Return DTOs              |
+
+### Benefits:
+* Cleaner code separation
+* Easier scaling
+* Better performance tuning
+
+---
+
+## 9. How to Run 🛠️
+
+### 1. Database Setup
 
 ```sql
 CREATE DATABASE order_mgmt_db;
+
+-----
 ```
+#### 2. Access the System
+````
+🧑‍💼 Seller Admin Dashboard
+   http://localhost:8080/
 
-### **2. Configuration**
-
-Update `src/main/resources/application.properties`:
-
-* `spring.datasource.username=root`
-* `spring.datasource.password=your_password`
-
-### **3. Run**
-
-```bash
-mvn spring-boot:run
-```
-
-✨ **Seller Admin:** `http://localhost:8080/`
-✨ **Student Store:** `http://localhost:8080/store` (Wait, did you create the store mapping? I can help with that\!)
-
+🛍️ Student Storefront
+    http://localhost:8080/store
+````
 -----
