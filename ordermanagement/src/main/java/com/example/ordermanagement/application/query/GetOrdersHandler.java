@@ -2,26 +2,27 @@ package com.example.ordermanagement.application.query;
 
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.CustomerRepository;
-import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.repository.OrderReadRepository;
+import com.example.ordermanagement.domain.repository.OrderWriteRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class GetOrdersHandler { // Name matches the file name
+public class GetOrdersHandler {
 
-    private final OrderRepository repository;
+    private final OrderReadRepository readRepository;
     private final CustomerRepository customerRepository;
 
-    public GetOrdersHandler(OrderRepository repository, CustomerRepository customerRepository) {
-        this.repository = repository;
+    public GetOrdersHandler(OrderReadRepository readRepository, CustomerRepository customerRepository) {
+        this.readRepository = readRepository;
         this.customerRepository = customerRepository;
     }
 
     public List<OrderResponse> handle(GetOrdersQuery query) {
-        String searchTerm = query.searchTerm(); // Assuming GetOrdersQuery has this field
+        String searchTerm = query.searchTerm();
 
-        return repository.findAll().stream()
+        return readRepository.findAll().stream()
                 .filter(order -> {
                     if (searchTerm == null || searchTerm.isEmpty()) return true;
 
@@ -38,7 +39,6 @@ public class GetOrdersHandler { // Name matches the file name
     }
 
     // Inside GetOrdersHandler.java mapping method
-    // Inside GetOrdersHandler.java
     private OrderResponse mapToOrderResponse(Order order) {
         String name = customerRepository.findById(order.getCustomerId())
                 .map(c -> c.getFullName())
@@ -53,7 +53,7 @@ public class GetOrdersHandler { // Name matches the file name
         return new OrderResponse(
                 order.getPublicId().toString(),
                 name,
-                addressStr, // Use the safe string
+                addressStr,
                 order.getItems().stream()
                         .map(OrderItemResponse::fromDomain)
                         .collect(Collectors.toList()),

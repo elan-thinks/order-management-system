@@ -1,8 +1,9 @@
 package com.example.ordermanagement.infrastructure.persistence;
 
 import com.example.ordermanagement.domain.model.Order;
-import com.example.ordermanagement.domain.repository.OrderRepository;
-import org.springframework.stereotype.Repository; // Use @Repository instead of @Component
+import com.example.ordermanagement.domain.repository.OrderReadRepository;
+import com.example.ordermanagement.domain.repository.OrderWriteRepository;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-public class JpaOrderRepository implements OrderRepository {
+public class JpaOrderRepository implements OrderReadRepository, OrderWriteRepository {
 
     private final SpringDataOrderRepository springRepo;
 
@@ -42,7 +43,6 @@ public class JpaOrderRepository implements OrderRepository {
     }
     @Override
     public Optional<Order> findByPublicId(java.util.UUID publicId) {
-        // Assuming your springRepo has findByPublicId defined
         return springRepo.findByPublicId(publicId).map(OrderEntity::toDomain);
     }
 

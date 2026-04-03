@@ -11,13 +11,12 @@ import java.util.List;
 @Component
 public class OrderFactory {
 
-    // Your original ID logic, but cleaner
     private String generateFormattedId() {
         return String.format("ORD-%d", System.currentTimeMillis() % 100000);
     }
 
     public Order createOrder(Long customerId, Address shippingAddress, List<OrderItem> items) {
-//        String newId = generateFormattedId(); // Returns "ORD-XXXXX"
+
         Order order = new Order(customerId, shippingAddress);
 
         for (OrderItem item : items) {

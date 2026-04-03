@@ -21,17 +21,16 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id") // This ensures your PK is called order_id in the DB
+    @Column(name = "order_id")
     private Long id;
 
     @Column(unique = true, nullable = false)
     private UUID publicId; // Hibernate handles UUIDs automatically!
 
-    private Long customerId; // Matches Rule 2
+    private Long customerId;
     private String status;
     private LocalDate createdAt;
-    private BigDecimal amount; // <--- This is the name Hibernate knows
-//    private LocalDateTime createdAt; // <--- This is the name Hibernate knows
+    private BigDecimal amount; // <
 
     private String street;
     private String city;

@@ -2,8 +2,9 @@ package com.example.ordermanagement.application.command;
 
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.model.OrderItem;
+import com.example.ordermanagement.domain.repository.OrderReadRepository;
 import com.example.ordermanagement.domain.value.Money;
-import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.repository.OrderWriteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,17 +14,19 @@ import java.math.BigDecimal;
 @Service
 public class UpdateQuantityHandler {
 
-    private final OrderRepository repository;
+    private final OrderWriteRepository writeRepository;
+    private final OrderReadRepository readRepository;
 
-    public UpdateQuantityHandler(OrderRepository repository) {
-        this.repository = repository;
+    public UpdateQuantityHandler(OrderWriteRepository writeRepository, OrderReadRepository readRepository) {
+        this.writeRepository = writeRepository;
+        this.readRepository = readRepository;
     }
 
     @Transactional
     public void handle(UpdateQuantityCommand command) {
         Long id = Long.valueOf(command.orderId());
 
-        Order order = repository.findById(id)
+        Order order = readRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
 
         OrderItem targetItem = null;
@@ -47,6 +50,6 @@ public class UpdateQuantityHandler {
 
 // MUST BE: (SKU, Money, Quantity)
         order.addItem(new OrderItem(targetItem.getSku(), unitPrice, command.newQuantity()));
-        repository.save(order);
+        writeRepository.save(order);
     }
 }

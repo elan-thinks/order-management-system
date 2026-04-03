@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 public record OrderStatsResponse(
         long totalOrders,
         BigDecimal totalRevenue,
-        long newOrders,        // pendingCount
-        long processingOrders, // paidCount
+        long newOrders,
+        long processingOrders,
         long shippedOrders,
         long deliveredOrders,
         long cancelledOrders,
-        long activeListings,   // Added for Dashboard
-        long lowStockCount     // Added for Dashboard
+        long activeListings,
+        long lowStockCount
 ) {}

@@ -1,15 +1,16 @@
 package com.example.ordermanagement.application.command;
 
-import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.repository.OrderWriteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DeleteOrderHandler {
-    private final OrderRepository repository;
+    private final OrderWriteRepository writeRepository;
 
-    public DeleteOrderHandler(OrderRepository repository) {
-        this.repository = repository;
+    public DeleteOrderHandler(OrderWriteRepository writeRepository)
+    {
+        this.writeRepository = writeRepository;
     }
 
     @Transactional
@@ -17,6 +18,6 @@ public class DeleteOrderHandler {
         // FIXED: Convert the String ID from the command to a Long
         Long id = Long.valueOf(command.orderId());
 
-        repository.deleteById(id);
+        writeRepository.deleteById(id);
     }
 }

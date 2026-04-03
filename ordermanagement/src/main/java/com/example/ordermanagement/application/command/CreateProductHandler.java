@@ -1,5 +1,6 @@
 package com.example.ordermanagement.application.command;
 
+import com.example.ordermanagement.domain.factory.ProductFactory;
 import com.example.ordermanagement.domain.model.Product;
 import com.example.ordermanagement.domain.repository.ProductRepository;
 import com.example.ordermanagement.domain.value.Money; // Ensure this is imported
@@ -25,17 +26,15 @@ public class CreateProductHandler {
         }
         // 2. FIXED: Pass 'null' for the ID (the first argument)
         // Required: (Long, String, String, Money, int)
-        Product product = new Product(
-                null,           // <--- The missing Long ID
+        Product product = ProductFactory.create(
                 command.sku(),
                 command.name(),
                 price,
-                command.inventory(),
+                command.inventory(), // This matches your 'stockQuantity'
                 command.category()
         );
 
-        // 3. Optional: If your Product model has these setters
-        product.setStockQuantity(command.inventory());
+//        product.setStockQuantity(command.inventory());
 
         repository.save(product);
     }

@@ -10,16 +10,16 @@ import java.util.ArrayList;
 
 @Service
 public class PlaceOrderHandler {
-    private final OrderRepository orderRepo;
+    private final OrderWriteRepository orderWriteRepo;
     private final CustomerRepository customerRepo;
     private final ProductRepository productRepository;
     private final OrderFactory orderFactory;
 
-    public PlaceOrderHandler(OrderRepository orderRepo,
+    public PlaceOrderHandler(OrderWriteRepository orderWriteRepo,
                              CustomerRepository customerRepo,
                              ProductRepository productRepository,
                              OrderFactory orderFactory) {
-        this.orderRepo = orderRepo;
+        this.orderWriteRepo = orderWriteRepo;
         this.customerRepo = customerRepo;
         this.productRepository = productRepository;
         this.orderFactory = orderFactory;
@@ -34,7 +34,6 @@ public class PlaceOrderHandler {
                 .orElseThrow(() -> new RuntimeException("Customer not registered: " + command.authUserId()));
 
         // 2. Find the single Product directly from the command
-        // We use command.productName() and command.qty() now
         Product product = productRepository.findBySku(command.productName())
                 .or(() -> productRepository.findByName(command.productName()))
                 .orElseThrow(() -> new RuntimeException("Product not found: " + command.productName()));
@@ -56,7 +55,7 @@ public class PlaceOrderHandler {
         System.out.println("DEBUG: Calling OrderFactory...");
         Order order = orderFactory.createOrder(customer.getId(), command.shippingAddress(), domainItems);
 
-        orderRepo.save(order);
+        orderWriteRepo.save(order);
         System.out.println("DEBUG: Order saved successfully with PublicID: " + order.getPublicId());
     }
 }

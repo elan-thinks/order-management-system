@@ -3,7 +3,7 @@ package com.example.ordermanagement.domain.model;
 import com.example.ordermanagement.domain.value.ContactInfo;
 
 public class Customer {
-    private Long id; // Pure Long ID
+    private Long id;
     private String authId;
     private String fullName;
     private ContactInfo contactInfo;

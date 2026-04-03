@@ -9,8 +9,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "order_items")
 @Data
-//@AllArgsConstructor
-@NoArgsConstructor // Keep this for JPA
+@NoArgsConstructor
 public class OrderItemEntity {
 
     @Id
@@ -21,7 +20,7 @@ public class OrderItemEntity {
     private BigDecimal unitPrice;
     private int quantity;
 
-    // ADD THIS MANUAL CONSTRUCTOR TO FIX THE ERROR
+
     public OrderItemEntity(String id, String sku, BigDecimal unitPrice, int quantity) {
         this.id = id;
         this.sku = sku;
@@ -29,7 +28,6 @@ public class OrderItemEntity {
         this.quantity = quantity;
     }
 
-    // This is where the error was triggered (it couldn't find the constructor above)
     public static OrderItemEntity fromDomain(OrderItem item) {
         return new OrderItemEntity(
                 UUID.randomUUID().toString(),

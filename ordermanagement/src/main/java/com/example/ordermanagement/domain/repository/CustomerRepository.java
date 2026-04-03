@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.List;
 
 public interface CustomerRepository {
-    // ADD THIS LINE
     Optional<Customer> findById(Long id);
 
     Optional<Customer> findByAuthId(String authId);

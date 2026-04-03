@@ -1,9 +1,11 @@
 package com.example.ordermanagement.application.command;
 
 public record CreateProductCommand(
-        String name,
         String sku,
-        String category,
+        String name,
         double price,
-        int inventory
+        int inventory,
+        String category
+
+
 ) {}

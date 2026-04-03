@@ -2,7 +2,7 @@ package com.example.ordermanagement.application.query;
 
 import com.example.ordermanagement.domain.model.Product;
 import com.example.ordermanagement.domain.repository.CustomerRepository;
-import com.example.ordermanagement.domain.repository.OrderRepository;
+import com.example.ordermanagement.domain.repository.OrderReadRepository;
 import com.example.ordermanagement.domain.model.Order;
 import com.example.ordermanagement.domain.repository.ProductRepository;
 import com.example.ordermanagement.domain.value.OrderStatus;
@@ -15,24 +15,24 @@ import java.util.stream.Collectors;
 @Service
 public class OrderQueryHandler {
 
-    private final OrderRepository repository;
+    private final OrderReadRepository readRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
 
-    public OrderQueryHandler(OrderRepository repository, ProductRepository productRepository, CustomerRepository customerRepository) {
-        this.repository = repository;
+    public OrderQueryHandler(OrderReadRepository readRepository, ProductRepository productRepository, CustomerRepository customerRepository) {
+        this.readRepository = readRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
     }
 
     public List<OrderResponse> handle(GetOrdersQuery query) {
-        return repository.findAll().stream()
+        return readRepository.findAll().stream()
                 .map(this::mapToOrderResponse)
                 .collect(Collectors.toList());
     }
 
     public DashboardStats getStats() {
-        List<Order> allOrders = repository.findAll();
+        List<Order> allOrders = readRepository.findAll();
         List<Product> allProducts = productRepository.findAll();
 
         // 1. Calculate Total Revenue (Only from Completed/Delivered orders)
@@ -65,9 +65,8 @@ public class OrderQueryHandler {
 
         // 4. Chart Data
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(6);
-        List<BigDecimal> weeklySales = repository.getSalesForLast7Days(sevenDaysAgo);
+        List<BigDecimal> weeklySales = readRepository.getSalesForLast7Days(sevenDaysAgo);
 
-        // Ensure we don't pass a null list to JavaScript
         if (weeklySales == null) weeklySales = List.of();
 
         return new DashboardStats(
